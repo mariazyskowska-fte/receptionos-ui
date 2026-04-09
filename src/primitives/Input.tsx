@@ -5,7 +5,7 @@ import { cn } from "../utils/cn";
  * Labeled input — anatomy from `03-components.md` (Input Labeled).
  * Label-above stack, gap-2, 8px-radius border, optional error message.
  *
- * Error state is added by `@receptionos/ui` (the source audit notes
+ * Error state is added by `receptionos-ui` (the source audit notes
  * "no error states present" — see 04-patterns.md, Form validation).
  * The validation messages from gherkin user stories
  * (US-CF-05 sc.2 / US-CO-04 sc.3 / US-SF-04 sc.2 — "Wybierz kanał

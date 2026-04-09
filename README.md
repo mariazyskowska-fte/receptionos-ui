@@ -1,4 +1,10 @@
-# @receptionos/ui
+# receptionos-ui
+
+> **Public git dependency.** This package is consumed directly from
+> GitHub as a git dependency — no npm registry required. The repo is
+> public at `github.com/mariazyskowska-fte/receptionos-ui`. When a
+> `receptionos` GitHub org is created, the repo will move there — the
+> only change needed in consuming apps is the git URL in `package.json`.
 
 Shared design system for the **receptionOS** platform — phase **R1** of the
 [Plan implementacji R1+R2](../01-Plan-implementacji-R1-R2.pdf). This package
@@ -49,19 +55,28 @@ When extending this package, always reference these files first:
 ## Install (in each app)
 
 ```bash
-bun add @receptionos/ui
+bun add github:mariazyskowska-fte/receptionos-ui#v0.1.0
+```
+
+Or manually in `package.json`:
+```json
+{
+  "dependencies": {
+    "receptionos-ui": "github:mariazyskowska-fte/receptionos-ui#v0.1.0"
+  }
+}
 ```
 
 `tailwind.config.ts`:
 ```ts
-import preset from "@receptionos/ui/tailwind-preset";
+import preset from "receptionos-ui/tailwind-preset";
 export default { presets: [preset], content: [...] };
 ```
 
 ## Usage
 
 ```tsx
-import { EmptyState, DashboardHeader, TrendChart } from "@receptionos/ui";
+import { EmptyState, DashboardHeader, TrendChart } from "receptionos-ui";
 
 // Manager dashboard hero — US-SF-05 sc.1
 <DashboardHeader

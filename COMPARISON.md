@@ -1,4 +1,4 @@
-# Comparison: `@receptionos/ui` vs current apps
+# Comparison: `receptionos-ui` vs current apps
 
 > Audit date: 2026-04-08. Compares this package's 6 patterns + 4 primitives
 > against what is **already implemented** in the three Layer-5 apps:
@@ -15,13 +15,13 @@
 
 | Layer | Status across apps | Action |
 |---|---|---|
-| **Token primitives (button, card, input, badge)** | All 3 apps ship full **shadcn/ui** kit. **Drift from locked rules:** shadcn `Button` is `rounded-md`, audit demands `rounded-pill`. | Replace `import { Button } from "@/components/ui/button"` with `@receptionos/ui` Button — or override the shadcn variant to `rounded-full`. |
-| **EmptyState** | **Not implemented in any app.** Gherkin contract is therefore violated 3×. | Adopt `@receptionos/ui` EmptyState immediately. High-impact, low-risk change. |
+| **Token primitives (button, card, input, badge)** | All 3 apps ship full **shadcn/ui** kit. **Drift from locked rules:** shadcn `Button` is `rounded-md`, audit demands `rounded-pill`. | Replace `import { Button } from "@/components/ui/button"` with `receptionos-ui` Button — or override the shadcn variant to `rounded-full`. |
+| **EmptyState** | **Not implemented in any app.** Gherkin contract is therefore violated 3×. | Adopt `receptionos-ui` EmptyState immediately. High-impact, low-risk change. |
 | **ProfileForm** | ShiftFlow has a **600+ line** `ReceptionistManagementPanel.tsx`; CallFlow + ConsultFlow have ad-hoc forms. None enforce the "Wybierz kanał powiadomień" validation literal. | Refactor toward `ProfileForm`. Keep app-specific extras (color picker, preferred-hours grid) outside the shared component. |
-| **TrendChart** | ConsultFlow has `ScoreChart.tsx`; CallFlow + ShiftFlow have **none**. | Adopt `@receptionos/ui` TrendChart in CallFlow + ShiftFlow first; migrate ConsultFlow's `ScoreChart` later. |
+| **TrendChart** | ConsultFlow has `ScoreChart.tsx`; CallFlow + ShiftFlow have **none**. | Adopt `receptionos-ui` TrendChart in CallFlow + ShiftFlow first; migrate ConsultFlow's `ScoreChart` later. |
 | **DashboardHeader** | ConsultFlow has `DashboardStats.tsx` (4-card grid). CallFlow has only a back button + title row. ShiftFlow's manager view is a free-form layout. | Replace each one with `DashboardHeader`. The 4-card grid in ConsultFlow contradicts the gherkin: every gherkin specifies exactly **one** "główna metryka". |
-| **InboxNotification** | **Not present in any app.** The Omnichannel Inbox is a platform-shell concept; the layer-5 apps don't render it themselves. | Defer adoption until the platform shell exists. The component is built into `@receptionos/ui` so it's ready to drop in. |
-| **TeamMemberRow** | CallFlow uses `ReportsTable` (a per-report table, not a per-person list). ConsultFlow's "DashboardStats" doesn't list people. ShiftFlow has no team list at all. | Adopt `@receptionos/ui` TeamMemberRow — currently **all three apps fail to satisfy the gherkin contract** for the manager dashboard list. |
+| **InboxNotification** | **Not present in any app.** The Omnichannel Inbox is a platform-shell concept; the layer-5 apps don't render it themselves. | Defer adoption until the platform shell exists. The component is built into `receptionos-ui` so it's ready to drop in. |
+| **TeamMemberRow** | CallFlow uses `ReportsTable` (a per-report table, not a per-person list). ConsultFlow's "DashboardStats" doesn't list people. ShiftFlow has no team list at all. | Adopt `receptionos-ui` TeamMemberRow — currently **all three apps fail to satisfy the gherkin contract** for the manager dashboard list. |
 
 ---
 
@@ -38,7 +38,7 @@
 | `ConsultFlowAI/client/src/pages/consultations.tsx` | Shows skeleton on load, no first-time empty state | ❌ Violation of US-CO-02 sc.4 |
 | `dental-shift-solver/src/pages/Index.tsx` | Calendar grid renders blank cells | ❌ Violation of US-SF-02 sc.3 |
 
-**Recommendation: REPLACE.** Drop `<EmptyState>` from `@receptionos/ui` into
+**Recommendation: REPLACE.** Drop `<EmptyState>` from `receptionos-ui` into
 each "first time" route. Use the literal Polish copy from the gherkin
 (already pre-quoted in `PATTERNS.md`).
 
@@ -54,7 +54,7 @@ each "first time" route. Use the literal Polish copy from the gherkin
 mention (`color`, `preferredHours`, `availableDays`, `maxHoursPerDay`). These
 are legitimate ShiftFlow extensions, but the **shared base** (firstName,
 lastName, notificationChannel, validation) should come from
-`@receptionos/ui`'s `ProfileForm`. The extras can wrap or extend it.
+`receptionos-ui`'s `ProfileForm`. The extras can wrap or extend it.
 
 **Drift to fix:** none of the three forms enforce the cross-app validation
 literal *"Wybierz kanał powiadomień"*. Adopting `ProfileForm` fixes that
@@ -81,7 +81,7 @@ base.
 
 **Recommendation: REPLACE** in CallFlow + ShiftFlow.
 **REFACTOR** in ConsultFlow: deprecate `ScoreChart` and migrate to
-`@receptionos/ui`'s `TrendChart`. The contracts the existing component
+`receptionos-ui`'s `TrendChart`. The contracts the existing component
 misses are not optional — they are gherkin-mandated.
 
 ### 4. DashboardHeader
@@ -111,7 +111,7 @@ the headline; keep the 4-card grid in ConsultFlow as a *secondary* row
 |---|---|
 | All 3 | **Not implemented at the layer-5 level.** Correct — the Omnichannel Inbox lives in the platform shell (`UI/app-structure-reference/01-platform-screen-map.md` § Tasks). |
 
-**Verdict: DO NOT PORT YET.** The component exists in `@receptionos/ui` so
+**Verdict: DO NOT PORT YET.** The component exists in `receptionos-ui` so
 it's ready when the platform shell repo lands, but no app-side action is
 needed today. If we wanted a quick win, we could ship a "Powiadomienia"
 banner inside each app using this component.
@@ -148,7 +148,7 @@ This is the **largest current gap** and the highest-leverage adoption.
 
 1. **shadcn/ui as the underlying primitive layer.** It's fine — the R1 plan
    doesn't ask us to rewrite primitives, only to add shared *patterns* on
-   top. Keep shadcn, add `@receptionos/ui` patterns above it.
+   top. Keep shadcn, add `receptionos-ui` patterns above it.
 2. **CallFlow's split between operator (`CoachingReportView`) and manager
    (`ManagerDashboard`).** The role separation is correct; only the
    *content* of each view needs the shared patterns.
@@ -175,7 +175,7 @@ they are speculative scope or carried over from shadcn defaults:
 1. **Week 1:** Adopt `EmptyState` in all 3 apps. Smallest diff, biggest
    contract win.
 2. **Week 1:** Replace shadcn `Button` styling with `rounded-pill` (or
-   import `@receptionos/ui`'s Button directly). Single Tailwind override.
+   import `receptionos-ui`'s Button directly). Single Tailwind override.
 3. **Week 2:** Add `DashboardHeader` to all 3 manager dashboards. Demote
    ConsultFlow's 4-card grid below it.
 4. **Week 2:** Add `TeamMemberRow` lists to all 3 manager dashboards.

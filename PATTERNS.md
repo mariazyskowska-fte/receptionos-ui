@@ -3,7 +3,7 @@
 > Each pattern in this package is anchored to specific gherkin scenarios.
 > When you (Lovable / Replit / human) need to render one of these screens
 > in CallFlow / ConsultFlow / ShiftFlow, **always import from
-> `@receptionos/ui` instead of building locally**.
+> `receptionos-ui` instead of building locally**.
 
 ## 1. `EmptyState`
 

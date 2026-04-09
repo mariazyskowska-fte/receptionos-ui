@@ -1,12 +1,12 @@
 /**
- * @receptionos/ui — Tailwind preset
+ * receptionos-ui — Tailwind preset
  *
  * Locked tokens, extracted from `UI/design-system-audit/02-design-tokens.md`
  * + `05-rules-for-lovable.md`. These values are the contract — do not override
  * in consuming apps without explicit approval.
  *
  * Apps consume this preset in their tailwind.config:
- *   presets: [require("@receptionos/ui/tailwind-preset")]
+ *   presets: [require("receptionos-ui/tailwind-preset")]
  */
 module.exports = {
   theme: {
