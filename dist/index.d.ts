@@ -308,4 +308,68 @@ interface TeamMemberRowProps {
 }
 declare function TeamMemberRow({ brand, name, subtitle, metricLabel, metricValue, trend, status, onOpen, className, }: TeamMemberRowProps): react_jsx_runtime.JSX.Element;
 
-export { Badge, type BadgeProps, type BadgeTone, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, EmptyState, type EmptyStateProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberStatus, type NotificationChannel, ProfileForm, type ProfileFormProps, type ProfileFormValue, TeamMemberRow, type TeamMemberRowProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * AppHeader — shared top navigation bar for all receptionOS apps.
+ *
+ * Layout spec from `UI/design-system-audit/01-layout.md`:
+ *   Nav bar: h=64px, bg-white, border-bottom #e4e4e7
+ *   [Logo]  [Tab | Tab (n) | Tab (n)]  [UserMenu]
+ *
+ * Nav tab spec from `UI/design-system-audit/03-components.md`:
+ *   Active: transparent bg, text #27272a
+ *   Inactive: transparent bg, text #71717a, hover bg #f4f4f5
+ *   No underline for active — text color change only
+ *   Gap between tabs: 2px
+ *   Tab padding: px-12px py-10px, rounded-8px
+ *
+ * User menu button spec from `03-components.md`:
+ *   Avatar 32px pill, brand bg, white initials
+ *   Chevron 16px, stroke #a1a1aa
+ *
+ * Locked rules from `05-rules-for-lovable.md`:
+ *   - Horizontal top nav only (sidebar forbidden)
+ *   - No underline on active tabs
+ *   - Geist font, 14px/20px Medium
+ *   - transition-colors duration-150
+ */
+interface NavItem {
+    /** Unique key for matching active state. */
+    key: string;
+    label: string;
+    /** Optional badge count (e.g. "Tasks (3)"). */
+    badge?: number;
+    /** Icon rendered before the label — 16px recommended. */
+    icon?: React.ReactNode;
+}
+interface AppHeaderProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** App name shown next to the logo mark. */
+    appName: string;
+    /** Optional subtitle under the app name. */
+    appSubtitle?: string;
+    /** Navigation items rendered as tabs. */
+    navItems?: NavItem[];
+    /** Key of the currently active nav item. */
+    activeKey?: string;
+    /** Called when a nav tab is clicked. */
+    onNavigate?: (key: string) => void;
+    /** User display name — used to derive initials for the avatar. */
+    userName?: string;
+    /** Slot rendered inside the user dropdown (logout button, etc.). */
+    userMenuContent?: React.ReactNode;
+    /** Extra content between nav tabs and user menu (e.g. clinic selector). */
+    actions?: React.ReactNode;
+    className?: string;
+}
+declare function AppHeader({ brand, appName, appSubtitle, navItems, activeKey, onNavigate, userName, userMenuContent, actions, className, }: AppHeaderProps): react_jsx_runtime.JSX.Element;
+/**
+ * AppHeaderMenuItem — helper for items inside the user dropdown.
+ * Follows the dropdown item spec: rounded-[6px], 14px text, hover bg.
+ */
+interface AppHeaderMenuItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    danger?: boolean;
+    icon?: React.ReactNode;
+}
+declare function AppHeaderMenuItem({ danger, icon, children, className, ...rest }: AppHeaderMenuItemProps): react_jsx_runtime.JSX.Element;
+
+export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, EmptyState, type EmptyStateProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberStatus, type NavItem, type NotificationChannel, ProfileForm, type ProfileFormProps, type ProfileFormValue, TeamMemberRow, type TeamMemberRowProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };

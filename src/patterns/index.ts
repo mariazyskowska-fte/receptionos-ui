@@ -23,3 +23,10 @@ export {
   type Trend,
   type MemberStatus,
 } from "./TeamMemberRow";
+export {
+  AppHeader,
+  AppHeaderMenuItem,
+  type AppHeaderProps,
+  type AppHeaderMenuItemProps,
+  type NavItem,
+} from "./AppHeader";

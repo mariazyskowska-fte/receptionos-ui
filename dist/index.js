@@ -575,7 +575,170 @@ function TeamMemberRow({
     }
   );
 }
+
+// src/patterns/AppHeader.tsx
+import * as React5 from "react";
+import { jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
+var brandBg2 = {
+  callflow: "bg-brand-callflow",
+  consultflow: "bg-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow"
+};
+function getInitials(name) {
+  return name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
+function AppHeader({
+  brand = "callflow",
+  appName,
+  appSubtitle,
+  navItems,
+  activeKey,
+  onNavigate,
+  userName,
+  userMenuContent,
+  actions,
+  className
+}) {
+  const [userMenuOpen, setUserMenuOpen] = React5.useState(false);
+  const menuRef = React5.useRef(null);
+  React5.useEffect(() => {
+    if (!userMenuOpen) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [userMenuOpen]);
+  return /* @__PURE__ */ jsx11(
+    "header",
+    {
+      className: cn(
+        "sticky top-0 z-50 h-16 w-full bg-white border-b border-ros-border",
+        className
+      ),
+      children: /* @__PURE__ */ jsxs8("div", { className: "flex items-center justify-between h-full px-6 max-w-full", children: [
+        /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-6 min-w-0", children: [
+          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-3 flex-shrink-0", children: [
+            /* @__PURE__ */ jsx11(
+              "div",
+              {
+                className: cn(
+                  "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold",
+                  brandBg2[brand]
+                ),
+                "aria-hidden": true,
+                children: appName.split(/(?=[A-Z])/)[0]?.slice(0, 2).toUpperCase() ?? "??"
+              }
+            ),
+            /* @__PURE__ */ jsxs8("div", { className: "flex flex-col", children: [
+              /* @__PURE__ */ jsx11("span", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: appName }),
+              appSubtitle && /* @__PURE__ */ jsx11("span", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: appSubtitle })
+            ] })
+          ] }),
+          navItems && navItems.length > 0 && /* @__PURE__ */ jsx11("nav", { className: "flex items-center gap-[2px]", "aria-label": "Nawigacja g\u0142\xF3wna", children: navItems.map((item) => {
+            const isActive = item.key === activeKey;
+            return /* @__PURE__ */ jsxs8(
+              "button",
+              {
+                type: "button",
+                onClick: () => onNavigate?.(item.key),
+                className: cn(
+                  "flex items-center gap-1.5 px-3 py-2.5 rounded-input text-[14px] leading-[20px] font-medium transition-colors duration-150 border-none bg-transparent cursor-pointer",
+                  isActive ? "text-ros-ink-medium" : "text-ros-ink-muted hover:bg-ros-surface-hover"
+                ),
+                "aria-current": isActive ? "page" : void 0,
+                children: [
+                  item.icon,
+                  /* @__PURE__ */ jsxs8("span", { children: [
+                    item.label,
+                    item.badge != null && item.badge > 0 && /* @__PURE__ */ jsxs8("span", { className: "text-ros-ink-muted", children: [
+                      " (",
+                      item.badge,
+                      ")"
+                    ] })
+                  ] })
+                ]
+              },
+              item.key
+            );
+          }) })
+        ] }),
+        /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-3 flex-shrink-0", children: [
+          actions,
+          userName && /* @__PURE__ */ jsxs8("div", { className: "relative", ref: menuRef, children: [
+            /* @__PURE__ */ jsxs8(
+              "button",
+              {
+                type: "button",
+                onClick: () => setUserMenuOpen((o) => !o),
+                className: "flex items-center gap-2 pl-2 pr-2.5 py-2 rounded-input bg-white hover:bg-ros-surface-hover active:bg-ros-border transition-colors duration-150 border-none cursor-pointer",
+                "aria-expanded": userMenuOpen,
+                "aria-haspopup": "true",
+                children: [
+                  /* @__PURE__ */ jsx11(
+                    "div",
+                    {
+                      className: cn(
+                        "size-8 rounded-pill flex items-center justify-center text-white text-[14px] font-bold",
+                        brandBg2[brand]
+                      ),
+                      children: getInitials(userName)
+                    }
+                  ),
+                  /* @__PURE__ */ jsx11(
+                    "svg",
+                    {
+                      width: "16",
+                      height: "16",
+                      viewBox: "0 0 24 24",
+                      fill: "none",
+                      stroke: "#a1a1aa",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round",
+                      "aria-hidden": true,
+                      children: /* @__PURE__ */ jsx11("polyline", { points: "6 9 12 15 18 9" })
+                    }
+                  )
+                ]
+              }
+            ),
+            userMenuOpen && userMenuContent && /* @__PURE__ */ jsx11("div", { className: "absolute right-0 top-full mt-1 w-56 bg-white rounded-input border border-ros-border shadow-card p-1 z-50", children: userMenuContent })
+          ] })
+        ] })
+      ] })
+    }
+  );
+}
+function AppHeaderMenuItem({
+  danger,
+  icon,
+  children,
+  className,
+  ...rest
+}) {
+  return /* @__PURE__ */ jsxs8(
+    "button",
+    {
+      type: "button",
+      className: cn(
+        "w-full flex items-center gap-2 px-3 py-2 rounded-[6px] text-[14px] leading-[20px] font-medium text-left transition-colors duration-150 border-none bg-transparent cursor-pointer",
+        danger ? "text-ros-danger-fg hover:bg-ros-danger-bg" : "text-ros-ink hover:bg-ros-surface-hover",
+        className
+      ),
+      ...rest,
+      children: [
+        icon,
+        children
+      ]
+    }
+  );
+}
 export {
+  AppHeader,
+  AppHeaderMenuItem,
   Badge,
   Button,
   Card,
