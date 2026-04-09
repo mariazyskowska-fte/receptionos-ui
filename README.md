@@ -55,14 +55,14 @@ When extending this package, always reference these files first:
 ## Install (in each app)
 
 ```bash
-bun add github:mariazyskowska-fte/receptionos-ui#v0.1.0
+bun add github:mariazyskowska-fte/receptionos-ui#main
 ```
 
 Or manually in `package.json`:
 ```json
 {
   "dependencies": {
-    "receptionos-ui": "github:mariazyskowska-fte/receptionos-ui#v0.1.0"
+    "receptionos-ui": "github:mariazyskowska-fte/receptionos-ui#main"
   }
 }
 ```

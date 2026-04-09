@@ -372,4 +372,132 @@ interface AppHeaderMenuItemProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 declare function AppHeaderMenuItem({ danger, icon, children, className, ...rest }: AppHeaderMenuItemProps): react_jsx_runtime.JSX.Element;
 
-export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, EmptyState, type EmptyStateProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberStatus, type NavItem, type NotificationChannel, ProfileForm, type ProfileFormProps, type ProfileFormValue, TeamMemberRow, type TeamMemberRowProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * PageHeading — section header used at the top of every tab/page view.
+ *
+ * Anatomy: title (left) + optional description below + optional actions (right).
+ * Follows the locked typography scale: title 18px/600, description 14px/400.
+ *
+ * Used on every tab: Dashboard, Import, Zespół — provides consistent
+ * visual rhythm across all receptionOS apps.
+ */
+interface PageHeadingProps {
+    title: string;
+    description?: string;
+    /** Right-aligned slot for CTA buttons or controls. */
+    actions?: React.ReactNode;
+    className?: string;
+}
+declare function PageHeading({ title, description, actions, className, }: PageHeadingProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * ImportDropZone — file upload area with drag & drop, file preview,
+ * and progress indicator.
+ *
+ * Cross-app usage:
+ *  - CallFlow:    CSV transcript upload (US-CF-01 flow, manager side)
+ *  - ConsultFlow: Audio file upload (US-CO-01, MP3/WAV/M4A)
+ *  - ShiftFlow:   Schedule text/CSV paste or file (import flow)
+ *
+ * The component is intentionally "dumb" — it handles visual state only.
+ * All upload logic (chunked upload, validation, API calls) stays in
+ * the consuming app.
+ *
+ * Visual spec follows `03-components.md` Card Standard (rounded-card,
+ * border, bg-white) with a dashed inner border for the drop area.
+ */
+interface ImportDropZoneProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** Accepted file types, e.g. ".csv" or ".mp3,.wav,.m4a,audio/*" */
+    accept?: string;
+    /** Human-readable description of accepted formats. */
+    acceptLabel?: string;
+    /** Max file size in bytes. Shown as helper text. */
+    maxSize?: number;
+    /** Currently selected file. When set, renders file preview instead of drop area. */
+    selectedFile?: {
+        name: string;
+        size: number;
+    } | null;
+    /** Upload progress 0–100. When > 0, renders progress bar. */
+    progress?: number;
+    /** Progress label, e.g. "Analiza AI w toku..." */
+    progressLabel?: string;
+    /** Called when user selects a file via input or drop. */
+    onFileSelect?: (file: File) => void;
+    /** Called when user removes the selected file. */
+    onRemove?: () => void;
+    /** Submit button label. */
+    submitLabel?: string;
+    /** Called when user clicks submit. */
+    onSubmit?: () => void;
+    /** Disables all interactions. */
+    disabled?: boolean;
+    /** Extra content rendered between file preview and submit button (e.g. metadata fields). */
+    children?: React.ReactNode;
+    className?: string;
+}
+declare function ImportDropZone({ brand, accept, acceptLabel, maxSize, selectedFile, progress, progressLabel, onFileSelect, onRemove, submitLabel, onSubmit, disabled, children, className, }: ImportDropZoneProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * ImportBatchRow — status row for an uploaded file/batch in the Import
+ * tab's history list.
+ *
+ * Cross-app usage:
+ *  - CallFlow:    CSV batch → "analyzing" → "completed" → CTA "Generuj raport"
+ *  - ConsultFlow: Audio file → "analyzing" → "completed" → CTA "Zobacz raport"
+ *  - ShiftFlow:   Schedule paste → "parsed" → CTA "Importuj do grafiku"
+ *
+ * Visual pattern mirrors InboxNotification but for data imports:
+ * icon + file info + status badge + optional progress + CTA.
+ */
+type ImportBatchStatus = "pending" | "analyzing" | "completed" | "error";
+interface ImportBatchRowProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** File or batch name. */
+    fileName: string;
+    /** Secondary info: receptionist name, date, item count, etc. */
+    subtitle?: string;
+    status: ImportBatchStatus;
+    /** Progress 0–100, shown when status is "analyzing". */
+    progress?: number;
+    /** Custom status label override. */
+    statusLabel?: string;
+    /** Timestamp string, e.g. "2 min temu". */
+    timestamp?: string;
+    /** CTA button (shown for completed/error batches). */
+    ctaLabel?: string;
+    onCta?: () => void;
+    /** Loading state for CTA button. */
+    ctaLoading?: boolean;
+    className?: string;
+}
+declare function ImportBatchRow({ brand, fileName, subtitle, status, progress, statusLabel, timestamp, ctaLabel, onCta, ctaLoading, className, }: ImportBatchRowProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * ImportPageLayout — page-level wrapper for the Import tab.
+ *
+ * Composes PageHeading + a content area (ImportDropZone + ImportBatchRow
+ * list). Ensures consistent vertical spacing and max-width across all
+ * three receptionOS apps.
+ *
+ * Usage:
+ *   <ImportPageLayout brand="callflow" title="Import rozmów" description="...">
+ *     <ImportDropZone ... />
+ *     <div className="space-y-2">
+ *       {batches.map(b => <ImportBatchRow ... />)}
+ *     </div>
+ *   </ImportPageLayout>
+ */
+interface ImportPageLayoutProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    title: string;
+    description?: string;
+    /** Right-aligned actions in the heading (e.g. help link). */
+    actions?: React.ReactNode;
+    children: React.ReactNode;
+    className?: string;
+}
+declare function ImportPageLayout({ title, description, actions, children, className, }: ImportPageLayoutProps): react_jsx_runtime.JSX.Element;
+
+export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, EmptyState, type EmptyStateProps, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, TeamMemberRow, type TeamMemberRowProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
