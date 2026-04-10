@@ -42,8 +42,11 @@ __export(index_exports, {
   ImportPageLayout: () => ImportPageLayout,
   InboxNotification: () => InboxNotification,
   Input: () => Input,
+  MemberDetailView: () => MemberDetailView,
   PageHeading: () => PageHeading,
   ProfileForm: () => ProfileForm,
+  ReportBreakdown: () => ReportBreakdown,
+  TeamHeatmap: () => TeamHeatmap,
   TeamMemberRow: () => TeamMemberRow,
   TrendChart: () => TrendChart,
   tokens: () => tokens_exports
@@ -1094,6 +1097,396 @@ function ImportPageLayout({
     children
   ] });
 }
+
+// src/patterns/TeamHeatmap.tsx
+var React7 = __toESM(require("react"), 1);
+var import_jsx_runtime16 = require("react/jsx-runtime");
+function scoreTone(score) {
+  if (score >= 75) return "success";
+  if (score >= 50) return "warn";
+  if (score > 0) return "danger";
+  return "neutral";
+}
+function scoreBg(score) {
+  if (score >= 75) return "bg-ros-success-bg";
+  if (score >= 50) return "bg-[#fff7ed]";
+  if (score > 0) return "bg-ros-danger-bg";
+  return "bg-ros-surface-off";
+}
+function scoreText(score) {
+  if (score >= 75) return "text-ros-success-fg";
+  if (score >= 50) return "text-ros-warn-fg";
+  if (score > 0) return "text-ros-danger-fg";
+  return "text-ros-ink-faint";
+}
+function TeamHeatmap({
+  brand = "callflow",
+  areas,
+  members,
+  suggestion,
+  onWeakestAreaClick,
+  className
+}) {
+  const areaAverages = React7.useMemo(() => {
+    return areas.map((area) => {
+      const scores = members.map((m) => m.scores[area]).filter((s) => s != null && s > 0);
+      if (scores.length === 0) return { area, avg: 0, count: 0 };
+      const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      return { area, avg, count: scores.length };
+    });
+  }, [areas, members]);
+  const weakest = React7.useMemo(() => {
+    const scored = areaAverages.filter((a) => a.count > 0);
+    if (scored.length === 0) return null;
+    return scored.reduce((min, a) => a.avg < min.avg ? a : min, scored[0]);
+  }, [areaAverages]);
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
+    "div",
+    {
+      className: cn(
+        "rounded-card border border-ros-border bg-white p-6 flex flex-col gap-4",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: "Heatmapa obszar\xF3w" }),
+          weakest && weakest.avg < 75 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Badge, { tone: scoreTone(weakest.avg), children: [
+            "Najs\u0142abszy: ",
+            weakest.area,
+            " (",
+            weakest.avg,
+            "%)"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("table", { className: "w-full border-collapse", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("th", { className: "text-left text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 pr-3 min-w-[120px]", children: "Osoba" }),
+            areas.map((area) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+              "th",
+              {
+                className: "text-center text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 px-2 min-w-[72px]",
+                children: area
+              },
+              area
+            ))
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tbody", { children: [
+            members.map((member) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { className: "border-t border-ros-border", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "text-[14px] leading-[20px] font-medium text-ros-ink py-2 pr-3", children: member.name }),
+              areas.map((area) => {
+                const score = member.scores[area] ?? 0;
+                const isWeakest = weakest && area === weakest.area && score > 0 && score <= weakest.avg;
+                return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "py-2 px-2", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+                  "div",
+                  {
+                    className: cn(
+                      "flex items-center justify-center h-8 rounded-stat text-[14px] font-medium transition-colors duration-150",
+                      scoreBg(score),
+                      scoreText(score),
+                      isWeakest && "ring-2 ring-ros-warn-fg/30"
+                    ),
+                    children: score > 0 ? `${score}` : "\u2014"
+                  }
+                ) }, area);
+              })
+            ] }, member.name)),
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { className: "border-t-2 border-ros-ink-faint", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted py-2 pr-3", children: "\u015Arednia zespo\u0142u" }),
+              areaAverages.map(({ area, avg }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "py-2 px-2", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+                "div",
+                {
+                  className: cn(
+                    "flex items-center justify-center h-8 rounded-stat text-[14px] font-bold",
+                    scoreBg(avg),
+                    scoreText(avg),
+                    weakest && area === weakest.area && "ring-2 ring-ros-warn-fg/30"
+                  ),
+                  children: avg > 0 ? `${avg}` : "\u2014"
+                }
+              ) }, area))
+            ] })
+          ] })
+        ] }) }),
+        suggestion && weakest && weakest.avg < 75 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-start gap-3 p-3 rounded-input bg-[#fff7ed] border border-ros-warn-fg/20", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-ros-warn-fg text-[14px] flex-shrink-0 mt-0.5", children: "\u2691" }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex flex-col gap-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: suggestion }),
+            onWeakestAreaClick && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => onWeakestAreaClick(weakest.area),
+                className: cn(
+                  "text-[12px] leading-[16px] font-medium text-left border-none bg-transparent cursor-pointer p-0",
+                  brand === "callflow" && "text-brand-callflow",
+                  brand === "consultflow" && "text-brand-consultflow",
+                  brand === "shiftflow" && "text-brand-shiftflow"
+                ),
+                children: "Zobacz wszystkie raporty z tym problemem \u2192"
+              }
+            )
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+
+// src/patterns/ReportBreakdown.tsx
+var React8 = __toESM(require("react"), 1);
+var import_jsx_runtime17 = require("react/jsx-runtime");
+function scoreTone2(score) {
+  if (score >= 75) return "success";
+  if (score >= 50) return "warn";
+  return "danger";
+}
+function scoreBg2(score) {
+  if (score >= 75) return "bg-ros-success-bg";
+  if (score >= 50) return "bg-[#fff7ed]";
+  return "bg-ros-danger-bg";
+}
+function scoreText2(score) {
+  if (score >= 75) return "text-ros-success-fg";
+  if (score >= 50) return "text-ros-warn-fg";
+  return "text-ros-danger-fg";
+}
+function deltaString(current, previous) {
+  const diff = current - previous;
+  if (diff > 0) return `+${diff}`;
+  return `${diff}`;
+}
+function ReportBreakdown({
+  brand = "callflow",
+  title,
+  overallScore,
+  previousOverallScore,
+  areas,
+  suggestions,
+  maxSuggestions = 3,
+  className
+}) {
+  const weakestArea = React8.useMemo(() => {
+    if (areas.length === 0) return null;
+    return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
+  }, [areas]);
+  const sortedAreas = React8.useMemo(() => {
+    return [...areas].sort((a, b) => a.score - b.score);
+  }, [areas]);
+  const visibleSuggestions = suggestions?.slice(0, maxSuggestions);
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+    "div",
+    {
+      className: cn(
+        "rounded-card border border-ros-border bg-white flex flex-col",
+        className
+      ),
+      children: [
+        (title || overallScore != null) && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between p-6 pb-0", children: [
+          title && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: title }),
+          overallScore != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[28px] leading-none font-medium text-ros-ink", children: overallScore }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: "/100" }),
+            previousOverallScore != null && previousOverallScore !== overallScore && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+              Badge,
+              {
+                tone: overallScore >= previousOverallScore ? "success" : "danger",
+                children: deltaString(overallScore, previousOverallScore)
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "p-6 flex flex-col gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Breakdown" }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-col gap-2", children: sortedAreas.map((area) => {
+            const isWeakest = weakestArea && area.name === weakestArea.name;
+            return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+              "div",
+              {
+                className: cn(
+                  "flex flex-col gap-2 p-3 rounded-input border transition-colors duration-150",
+                  isWeakest ? "border-ros-danger-fg/30 bg-ros-danger-bg/30" : "border-ros-border bg-white"
+                ),
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
+                      isWeakest && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px]", "aria-label": "Najs\u0142abszy obszar", children: "\u2757" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: area.name })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+                        "div",
+                        {
+                          className: cn(
+                            "px-2.5 py-0.5 rounded-pill text-[14px] font-bold",
+                            scoreBg2(area.score),
+                            scoreText2(area.score)
+                          ),
+                          children: area.score
+                        }
+                      ),
+                      area.previousScore != null && area.previousScore !== area.score && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+                        Badge,
+                        {
+                          tone: area.score >= area.previousScore ? "success" : "danger",
+                          children: deltaString(area.score, area.previousScore)
+                        }
+                      )
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "w-full h-1.5 bg-ros-surface-off rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+                    "div",
+                    {
+                      className: cn(
+                        "h-full rounded-pill transition-all duration-300",
+                        area.score >= 75 ? "bg-ros-success-fg" : area.score >= 50 ? "bg-ros-warn-fg" : "bg-ros-danger-fg"
+                      ),
+                      style: { width: `${Math.min(100, Math.max(0, area.score))}%` }
+                    }
+                  ) }),
+                  area.quote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start gap-2 mt-1", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px] flex-shrink-0 mt-0.5", children: area.quoteType === "positive" ? "\u2713" : "\u2757" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted italic", children: [
+                      "\u201E",
+                      area.quote,
+                      '"'
+                    ] })
+                  ] })
+                ]
+              },
+              area.name
+            );
+          }) })
+        ] }),
+        visibleSuggestions && visibleSuggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "border-t border-ros-border p-6 flex flex-col gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: visibleSuggestions.length === 1 ? "Sugestia" : `Priorytety (${visibleSuggestions.length})` }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-col gap-3", children: visibleSuggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+            "div",
+            {
+              className: "flex flex-col gap-1.5 p-3 rounded-input bg-ros-surface-off border border-ros-border",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Badge, { tone: scoreTone2(
+                  areas.find((a) => a.name === s.area)?.score ?? 0
+                ), children: s.area }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[14px] leading-[20px] text-ros-ink", children: s.text }),
+                s.sourceQuote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted italic", children: [
+                  "Kontekst: \u201E",
+                  s.sourceQuote,
+                  '"'
+                ] })
+              ]
+            },
+            i
+          )) })
+        ] })
+      ]
+    }
+  );
+}
+
+// src/patterns/MemberDetailView.tsx
+var import_jsx_runtime18 = require("react/jsx-runtime");
+var brandBg3 = {
+  callflow: "bg-brand-callflow",
+  consultflow: "bg-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow"
+};
+var trendGlyph2 = {
+  up: { glyph: "\u2191", tone: "success" },
+  down: { glyph: "\u2193", tone: "danger" },
+  flat: { glyph: "\u2192", tone: "neutral" }
+};
+function getInitials2(name) {
+  return name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
+function MemberDetailView({
+  brand = "callflow",
+  name,
+  subtitle,
+  metricLabel,
+  metricValue,
+  trend,
+  status,
+  onBack,
+  coachingNote,
+  onCoachingNoteChange,
+  coachingNotePlaceholder = "Dodaj notatk\u0119 coachingow\u0105 (widoczna tylko dla managera)...",
+  children,
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: cn("flex flex-col gap-6", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex flex-col gap-4", children: [
+      onBack && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+        "button",
+        {
+          type: "button",
+          onClick: onBack,
+          className: "flex items-center gap-1.5 text-[14px] leading-[20px] font-medium text-ros-ink-muted hover:text-ros-ink transition-colors duration-150 border-none bg-transparent cursor-pointer p-0 self-start",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+              "svg",
+              {
+                width: "16",
+                height: "16",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2",
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("polyline", { points: "15 18 9 12 15 6" })
+              }
+            ),
+            "Powr\xF3t do zespo\u0142u"
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center justify-between gap-4 rounded-card border border-ros-border bg-white p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+            "div",
+            {
+              className: cn(
+                "size-12 rounded-pill flex items-center justify-center text-white text-[16px] font-bold flex-shrink-0",
+                brandBg3[brand]
+              ),
+              "aria-hidden": true,
+              children: getInitials2(name)
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex flex-col gap-0.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: name }),
+            subtitle && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[14px] leading-[20px] text-ros-ink-muted", children: subtitle })
+          ] })
+        ] }),
+        metricValue && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-3 flex-shrink-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-right", children: [
+            metricLabel && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: metricLabel }),
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[28px] leading-none font-medium text-ros-ink", children: metricValue })
+          ] }),
+          trend && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: trendGlyph2[trend].tone, children: trendGlyph2[trend].glyph }),
+          status === "attention" && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: "warn", "aria-label": "Wymaga uwagi", children: "\u2757" })
+        ] })
+      ] })
+    ] }),
+    children,
+    onCoachingNoteChange != null && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "rounded-card border border-ros-border bg-white p-6 flex flex-col gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: "Notatka coachingowa" }),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: "neutral", children: "Tylko manager" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        "textarea",
+        {
+          value: coachingNote ?? "",
+          onChange: (e) => onCoachingNoteChange(e.target.value),
+          placeholder: coachingNotePlaceholder,
+          rows: 3,
+          className: "w-full px-3 py-2 bg-ros-surface-off rounded-input border border-ros-border-input text-[14px] leading-[20px] text-ros-ink placeholder:text-ros-ink-faint outline-none focus:border-ros-ink-muted resize-y"
+        }
+      )
+    ] })
+  ] });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AppHeader,
@@ -1108,8 +1501,11 @@ function ImportPageLayout({
   ImportPageLayout,
   InboxNotification,
   Input,
+  MemberDetailView,
   PageHeading,
   ProfileForm,
+  ReportBreakdown,
+  TeamHeatmap,
   TeamMemberRow,
   TrendChart,
   tokens

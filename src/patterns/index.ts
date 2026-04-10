@@ -44,3 +44,19 @@ export {
   ImportPageLayout,
   type ImportPageLayoutProps,
 } from "./ImportPageLayout";
+export {
+  TeamHeatmap,
+  type TeamHeatmapProps,
+  type HeatmapMember,
+  type HeatmapCell,
+} from "./TeamHeatmap";
+export {
+  ReportBreakdown,
+  type ReportBreakdownProps,
+  type BreakdownArea,
+  type Suggestion,
+} from "./ReportBreakdown";
+export {
+  MemberDetailView,
+  type MemberDetailViewProps,
+} from "./MemberDetailView";
