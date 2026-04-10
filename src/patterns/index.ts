@@ -22,6 +22,7 @@ export {
   type TeamMemberRowProps,
   type Trend,
   type MemberStatus,
+  type DeliveryStatus,
 } from "./TeamMemberRow";
 export {
   AppHeader,
@@ -62,5 +63,15 @@ export {
 } from "./MemberDetailView";
 export {
   DashboardLayout,
+  TeamPanelToolbar,
+  TeamPanelFooter,
   type DashboardLayoutProps,
+  type TeamPanelToolbarProps,
+  type TeamPanelFooterProps,
 } from "./DashboardLayout";
+export {
+  ActivityLog,
+  type ActivityLogProps,
+  type ActivityEntry,
+  type ActivityType,
+} from "./ActivityLog";

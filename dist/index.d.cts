@@ -270,9 +270,7 @@ interface InboxNotificationProps {
 declare function InboxNotification({ variant, brand, appLabel, title, body, timestamp, urgency, ctaLabel, onCta, className, }: InboxNotificationProps): react_jsx_runtime.JSX.Element;
 
 /**
- * TeamMemberRow — single row in the manager dashboard's team list. The
- * "lista [osób] z aktualnym wynikiem, trendem ↑/↓ i statusem ✓/❗"
- * description is repeated 1:1 in all three apps.
+ * TeamMemberRow — single row in the manager dashboard's team list.
  *
  * Source user stories:
  *  - CallFlow:    US-CF-04 sc.1 — "listę recepcjonistek z: aktualnym
@@ -282,16 +280,16 @@ declare function InboxNotification({ variant, brand, appLabel, title, body, time
  *  - ShiftFlow:   US-SF-05 sc.1 — "listę lekarzy z ich utilizacją, trendem
  *                 ↑/↓ i statusem ✓/❗"
  *
- * Role: MANAGER ONLY. Operators cannot see other team members' data
- * (cf. ConsultFlow US-CO-03 sc.3 explicitly: "Dr Mazur nie widzi wyników
- * konkretnych innych lekarzy"). Inadequate role gating here would directly
- * violate the gherkin contract.
+ * Role: MANAGER ONLY.
  *
- * Click target: opens the per-person detail view (US-CO-05 sc.3 — "Manager
- * otwiera pełny widok wybranego lekarza" + coaching note).
+ * Extended with:
+ *  - Selectable checkbox for bulk actions (send schedule/report)
+ *  - Delivery status indicator (sent ✓ / pending ◌)
+ *  - lastActivityAt for chronological sorting by consuming app
  */
 type Trend$1 = "up" | "down" | "flat";
 type MemberStatus$1 = "ok" | "attention";
+type DeliveryStatus = "delivered" | "pending" | "not_sent";
 interface TeamMemberRowProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
     name: string;
@@ -301,12 +299,18 @@ interface TeamMemberRowProps {
     metricLabel: string;
     metricValue: string;
     trend?: Trend$1;
-    /** "ok" → green check, "attention" → orange badge ("flagowane rozmowy"). */
+    /** "ok" → green check, "attention" → orange badge. */
     status?: MemberStatus$1;
+    /** Whether the latest report/schedule was delivered to this person. */
+    deliveryStatus?: DeliveryStatus;
+    /** Enables checkbox selection for bulk actions. */
+    selectable?: boolean;
+    selected?: boolean;
+    onSelect?: (selected: boolean) => void;
     onOpen?: () => void;
     className?: string;
 }
-declare function TeamMemberRow({ brand, name, subtitle, metricLabel, metricValue, trend, status, onOpen, className, }: TeamMemberRowProps): react_jsx_runtime.JSX.Element;
+declare function TeamMemberRow({ brand, name, subtitle, metricLabel, metricValue, trend, status, deliveryStatus, selectable, selected, onSelect, onOpen, className, }: TeamMemberRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * AppHeader — shared top navigation bar for all receptionOS apps.
@@ -648,33 +652,90 @@ interface MemberDetailViewProps {
 declare function MemberDetailView({ brand, name, subtitle, metricLabel, metricValue, trend, status, onBack, coachingNote, onCoachingNoteChange, coachingNotePlaceholder, children, className, }: MemberDetailViewProps): react_jsx_runtime.JSX.Element;
 
 /**
- * DashboardLayout — two-column manager dashboard following the locked
- * layout spec from `UI/design-system-audit/01-layout.md`:
+ * DashboardLayout — two-column manager dashboard.
  *
- *   ┌──────────────────────────────┬─────────────────┐
- *   │  MAIN (flex-1)              │  PANEL (384px)   │
- *   │  DashboardHeader            │  "Zespół"        │
- *   │  TrendChart                 │  TeamMemberRow   │
- *   │  TeamHeatmap (compact)      │  TeamMemberRow   │
- *   │                             │  TeamMemberRow   │
- *   │                             │  ...scrollable   │
- *   └──────────────────────────────┴─────────────────┘
+ *   ┌──────────────────────────────┬──────────────────┐
+ *   │  MAIN (flex-1)              │  panelToolbar     │
+ *   │  DashboardHeader            │  ──────────────── │
+ *   │  TrendChart                 │  TeamMemberRow ☑  │
+ *   │  TeamHeatmap                │  TeamMemberRow ☐  │
+ *   │                             │  TeamMemberRow ☑  │
+ *   │                             │  ──────────────── │
+ *   │                             │  [Wyślij do 2]    │
+ *   └──────────────────────────────┴──────────────────┘
  *
- * The right panel is fixed-width, scrollable independently, and holds
- * the team member list. This keeps the list always visible while the
- * manager reviews charts and heatmaps on the left.
- *
- * Role: MANAGER ONLY.
+ * Panel supports:
+ *  - panelToolbar: select all, count, filter
+ *  - panelFooter: bulk action button (send schedule/report)
  */
 interface DashboardLayoutProps {
-    /** Main content: DashboardHeader, TrendChart, TeamHeatmap, etc. */
     children: React.ReactNode;
     /** Right panel content: TeamMemberRow list. */
     panel: React.ReactNode;
-    /** Optional panel header (defaults to "Zespół"). */
     panelTitle?: string;
+    /** Toolbar above the list (select all toggle, count info). */
+    panelToolbar?: React.ReactNode;
+    /** Footer below the list (bulk action button). */
+    panelFooter?: React.ReactNode;
     className?: string;
 }
-declare function DashboardLayout({ children, panel, panelTitle, className, }: DashboardLayoutProps): react_jsx_runtime.JSX.Element;
+declare function DashboardLayout({ children, panel, panelTitle, panelToolbar, panelFooter, className, }: DashboardLayoutProps): react_jsx_runtime.JSX.Element;
+/**
+ * TeamPanelToolbar — helper for the panel toolbar slot.
+ * Provides select all toggle + selected count.
+ */
+interface TeamPanelToolbarProps {
+    totalCount: number;
+    selectedCount: number;
+    onSelectAll: () => void;
+    onDeselectAll: () => void;
+}
+declare function TeamPanelToolbar({ totalCount, selectedCount, onSelectAll, onDeselectAll, }: TeamPanelToolbarProps): react_jsx_runtime.JSX.Element;
+/**
+ * TeamPanelFooter — helper for the panel footer slot.
+ * Shows bulk action button when items are selected.
+ */
+interface TeamPanelFooterProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    selectedCount: number;
+    /** Action label, e.g. "Wyślij grafik" or "Wyślij raport". */
+    actionLabel: string;
+    onAction: () => void;
+    disabled?: boolean;
+}
+declare function TeamPanelFooter({ brand, selectedCount, actionLabel, onAction, disabled, }: TeamPanelFooterProps): react_jsx_runtime.JSX.Element | null;
 
-export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * ActivityLog — chronological timeline of events for a team member,
+ * shown inside MemberDetailView.
+ *
+ * Cross-app usage:
+ *  - ShiftFlow: schedule deliveries, AI suggestions, days off requests
+ *    (US-SF-02 sc.1 "grafik gotowy", US-SF-03 sc.1 "zgłasza nieobecność",
+ *     US-SF-03 sc.2 "zaktualizował preferencje")
+ *  - CallFlow: report generations, feedback given, coaching sessions
+ *    (US-CF-02 sc.1 "raport gotowy", US-CF-04 sc.2 "omówiona")
+ *  - ConsultFlow: consultation uploads, report deliveries, coaching notes
+ *    (US-CO-02 sc.1 "raport gotowy", US-CO-05 sc.3 "notatka coachingowa")
+ */
+type ActivityType = "report_sent" | "report_viewed" | "schedule_sent" | "schedule_confirmed" | "absence" | "preference_change" | "coaching_note" | "suggestion" | "feedback" | "custom";
+interface ActivityEntry {
+    type: ActivityType;
+    /** Short description, e.g. "Wysłano grafik na tydzień 14–18 kwi". */
+    text: string;
+    /** ISO timestamp or display string. */
+    timestamp: string;
+    /** Optional extra detail shown below the text. */
+    detail?: string;
+    /** Custom icon label override. */
+    iconLabel?: string;
+}
+interface ActivityLogProps {
+    entries: ActivityEntry[];
+    /** Max entries to show before "Pokaż więcej". 0 = show all. */
+    maxVisible?: number;
+    className?: string;
+}
+declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
