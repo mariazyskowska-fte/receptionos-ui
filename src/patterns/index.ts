@@ -52,7 +52,6 @@ export {
   TeamHeatmap,
   type TeamHeatmapProps,
   type HeatmapMember,
-  type HeatmapCell,
 } from "./TeamHeatmap";
 export {
   ReportBreakdown,
@@ -63,7 +62,15 @@ export {
 export {
   MemberDetailView,
   type MemberDetailViewProps,
+  type MemberDetailTrend,
+  type MemberDetailStatus,
+  type MemberDeliveryBadge,
 } from "./MemberDetailView";
+export {
+  ScoreCardRow,
+  type ScoreCardRowProps,
+  type ScoreCard,
+} from "./ScoreCardRow";
 export {
   DashboardLayout,
   TeamPanelToolbar,

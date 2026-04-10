@@ -49,6 +49,7 @@ __export(index_exports, {
   PageHeading: () => PageHeading,
   ProfileForm: () => ProfileForm,
   ReportBreakdown: () => ReportBreakdown,
+  ScoreCardRow: () => ScoreCardRow,
   TeamHeatmap: () => TeamHeatmap,
   TeamMemberRow: () => TeamMemberRow,
   TeamPanelFooter: () => TeamPanelFooter,
@@ -1482,6 +1483,11 @@ var trendGlyph2 = {
   down: { glyph: "\u2193", tone: "danger" },
   flat: { glyph: "\u2192", tone: "neutral" }
 };
+var deliveryConfig = {
+  delivered: { label: "Gotowe", className: "bg-ros-success-bg text-ros-success-fg" },
+  pending: { label: "Oczekuje", className: "bg-[#fff7ed] text-ros-warn-fg" },
+  not_sent: { label: "Nie wys\u0142ano", className: "bg-ros-surface-off text-ros-ink-faint" }
+};
 function getInitials2(name) {
   return name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 }
@@ -1493,90 +1499,144 @@ function MemberDetailView({
   metricValue,
   trend,
   status,
+  overallScore,
+  previousOverallScore,
+  deliveryBadge,
   onBack,
-  coachingNote,
-  onCoachingNoteChange,
-  coachingNotePlaceholder = "Dodaj notatk\u0119 coachingow\u0105 (widoczna tylko dla managera)...",
+  headerActions,
   children,
   className
 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: cn("flex flex-col gap-6", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex flex-col gap-4", children: [
-      onBack && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
-        "button",
-        {
-          type: "button",
-          onClick: onBack,
-          className: "flex items-center gap-1.5 text-[14px] leading-[20px] font-medium text-ros-ink-muted hover:text-ros-ink transition-colors duration-150 border-none bg-transparent cursor-pointer p-0 self-start",
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-              "svg",
-              {
-                width: "16",
-                height: "16",
-                viewBox: "0 0 24 24",
-                fill: "none",
-                stroke: "currentColor",
-                strokeWidth: "2",
-                strokeLinecap: "round",
-                strokeLinejoin: "round",
-                children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("polyline", { points: "15 18 9 12 15 6" })
-              }
-            ),
-            "Powr\xF3t do zespo\u0142u"
-          ]
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center justify-between gap-4 rounded-card border border-ros-border bg-white p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-4", children: [
+    onBack && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+      "button",
+      {
+        type: "button",
+        onClick: onBack,
+        className: "flex items-center gap-1.5 text-[14px] leading-[20px] font-medium text-ros-ink-muted hover:text-ros-ink transition-colors duration-150 border-none bg-transparent cursor-pointer p-0 self-start",
+        children: [
           /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-            "div",
+            "svg",
             {
-              className: cn(
-                "size-12 rounded-pill flex items-center justify-center text-white text-[16px] font-bold flex-shrink-0",
-                brandBg3[brand]
-              ),
-              "aria-hidden": true,
-              children: getInitials2(name)
+              width: "16",
+              height: "16",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              strokeWidth: "2",
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("polyline", { points: "15 18 9 12 15 6" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex flex-col gap-0.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: name }),
-            subtitle && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[14px] leading-[20px] text-ros-ink-muted", children: subtitle })
-          ] })
-        ] }),
-        metricValue && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-3 flex-shrink-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-right", children: [
-            metricLabel && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: metricLabel }),
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[28px] leading-none font-medium text-ros-ink", children: metricValue })
-          ] }),
-          trend && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: trendGlyph2[trend].tone, children: trendGlyph2[trend].glyph }),
-          status === "attention" && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: "warn", "aria-label": "Wymaga uwagi", children: "\u2757" })
+          "Powr\xF3t do zespo\u0142u"
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center justify-between gap-4 rounded-card border border-ros-border bg-white p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          "div",
+          {
+            className: cn(
+              "size-12 rounded-pill flex items-center justify-center text-white text-[16px] font-bold flex-shrink-0",
+              brandBg3[brand]
+            ),
+            "aria-hidden": true,
+            children: getInitials2(name)
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex flex-col gap-0.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: name }),
+          subtitle && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[14px] leading-[20px] text-ros-ink-muted", children: subtitle })
         ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-4 flex-shrink-0", children: [
+        deliveryBadge && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          "span",
+          {
+            className: cn(
+              "px-3 py-1 rounded-pill text-[12px] font-medium",
+              deliveryConfig[deliveryBadge].className
+            ),
+            children: deliveryConfig[deliveryBadge].label
+          }
+        ),
+        overallScore != null && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-baseline gap-2", children: [
+          previousOverallScore != null && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "text-[14px] text-ros-ink-muted", children: [
+            previousOverallScore.toFixed(1),
+            " \u2192"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-[28px] leading-none font-medium text-ros-ink", children: overallScore.toFixed(1) })
+        ] }),
+        metricValue && !overallScore && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-right", children: [
+          metricLabel && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: metricLabel }),
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[28px] leading-none font-medium text-ros-ink", children: metricValue })
+        ] }),
+        trend && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: trendGlyph2[trend].tone, children: trendGlyph2[trend].glyph }),
+        status === "attention" && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: "warn", "aria-label": "Wymaga uwagi", children: "\u2757" }),
+        headerActions
       ] })
     ] }),
-    children,
-    onCoachingNoteChange != null && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "rounded-card border border-ros-border bg-white p-6 flex flex-col gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: "Notatka coachingowa" }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Badge, { tone: "neutral", children: "Tylko manager" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-        "textarea",
-        {
-          value: coachingNote ?? "",
-          onChange: (e) => onCoachingNoteChange(e.target.value),
-          placeholder: coachingNotePlaceholder,
-          rows: 3,
-          className: "w-full px-3 py-2 bg-ros-surface-off rounded-input border border-ros-border-input text-[14px] leading-[20px] text-ros-ink placeholder:text-ros-ink-faint outline-none focus:border-ros-ink-muted resize-y"
-        }
-      )
-    ] })
+    children
   ] });
 }
 
-// src/patterns/DashboardLayout.tsx
+// src/patterns/ScoreCardRow.tsx
 var import_jsx_runtime19 = require("react/jsx-runtime");
+function barColor(score) {
+  if (score >= 75) return "bg-ros-success-fg";
+  if (score >= 50) return "bg-ros-warn-fg";
+  return "bg-ros-danger-fg";
+}
+function indicatorColor(score) {
+  if (score >= 75) return "text-ros-success-fg";
+  if (score >= 50) return "text-ros-warn-fg";
+  return "text-ros-danger-fg";
+}
+function formatScore(score, scale) {
+  if (score === 0) return "\u2014";
+  if (scale === "ten") return (score / 10).toFixed(1);
+  return `${score}%`;
+}
+function ScoreCardRow({
+  cards,
+  displayScale = "ten",
+  columns,
+  className
+}) {
+  const gridCols = columns ? `grid-cols-${columns}` : cards.length <= 3 ? "grid-cols-3" : cards.length <= 4 ? "grid-cols-4" : "grid-cols-3 lg:grid-cols-6";
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: cn("grid gap-3", gridCols, className), children: cards.map((card) => {
+    const isPositive = card.score >= 70;
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+      "div",
+      {
+        className: "rounded-stat bg-ros-surface-off p-4 flex flex-col gap-2",
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-[12px] leading-[16px] font-medium text-ros-ink-muted", children: card.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: cn("text-[12px]", indicatorColor(card.score)), children: isPositive ? "\u2713" : "\u2757" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-[24px] leading-none font-medium text-ros-ink", children: formatScore(card.score, displayScale) }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "w-full h-1.5 bg-ros-border rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "div",
+            {
+              className: cn(
+                "h-full rounded-pill transition-all duration-300",
+                barColor(card.score)
+              ),
+              style: { width: `${Math.min(100, Math.max(0, card.score))}%` }
+            }
+          ) })
+        ]
+      },
+      card.name
+    );
+  }) });
+}
+
+// src/patterns/DashboardLayout.tsx
+var import_jsx_runtime20 = require("react/jsx-runtime");
 function DashboardLayout({
   children,
   panel,
@@ -1585,13 +1645,13 @@ function DashboardLayout({
   panelFooter,
   className
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: cn("flex gap-6 items-start", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "px-4 py-3 border-b border-ros-border flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
-      panelToolbar && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "px-3 py-2 border-b border-ros-border bg-ros-surface-off", children: panelToolbar }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel }),
-      panelFooter && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: panelFooter })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("flex gap-6 items-start", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-4 py-3 border-b border-ros-border flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
+      panelToolbar && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-3 py-2 border-b border-ros-border bg-ros-surface-off", children: panelToolbar }),
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel }),
+      panelFooter && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: panelFooter })
     ] })
   ] });
 }
@@ -1602,8 +1662,8 @@ function TeamPanelToolbar({
   onDeselectAll
 }) {
   const allSelected = selectedCount === totalCount && totalCount > 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       "input",
       {
         type: "checkbox",
@@ -1612,7 +1672,7 @@ function TeamPanelToolbar({
         className: "size-3.5 rounded-sm border-ros-border accent-current cursor-pointer"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: selectedCount > 0 ? `${selectedCount} z ${totalCount}` : `Zaznacz wszystko` })
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: selectedCount > 0 ? `${selectedCount} z ${totalCount}` : `Zaznacz wszystko` })
   ] }) });
 }
 function TeamPanelFooter({
@@ -1623,7 +1683,7 @@ function TeamPanelFooter({
   disabled
 }) {
   if (selectedCount === 0) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
     Button,
     {
       brand,
@@ -1642,7 +1702,7 @@ function TeamPanelFooter({
 
 // src/patterns/ActivityLog.tsx
 var React9 = __toESM(require("react"), 1);
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_jsx_runtime21 = require("react/jsx-runtime");
 var typeConfig = {
   report_sent: { icon: "\u{1F4C4}", tone: "success" },
   report_viewed: { icon: "\u{1F441}", tone: "success" },
@@ -1664,9 +1724,9 @@ function ActivityLog({
   const visible = maxVisible > 0 && !expanded ? entries.slice(0, maxVisible) : entries;
   const hasMore = maxVisible > 0 && entries.length > maxVisible;
   if (entries.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("rounded-card border border-ros-border bg-white p-4", className), children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12px] text-ros-ink-muted text-center py-4", children: "Brak aktywno\u015Bci" }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: cn("rounded-card border border-ros-border bg-white p-4", className), children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] text-ros-ink-muted text-center py-4", children: "Brak aktywno\u015Bci" }) });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
     "div",
     {
       className: cn(
@@ -1674,11 +1734,11 @@ function ActivityLog({
         className
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Historia" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex flex-col", children: visible.map((entry, i) => {
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Historia" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-col", children: visible.map((entry, i) => {
           const cfg = typeConfig[entry.type];
           const isLast = i === visible.length - 1;
-          return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+          return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
             "div",
             {
               className: cn(
@@ -1686,20 +1746,20 @@ function ActivityLog({
                 !isLast && "border-b border-ros-border"
               ),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex flex-col items-center pt-0.5 flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] leading-none", children: entry.iconLabel ?? cfg.icon }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex-1 min-w-0", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-start justify-between gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[13px] leading-[18px] text-ros-ink", children: entry.text }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap", children: entry.timestamp })
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-col items-center pt-0.5 flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-[12px] leading-none", children: entry.iconLabel ?? cfg.icon }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex-1 min-w-0", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-start justify-between gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[13px] leading-[18px] text-ros-ink", children: entry.text }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap", children: entry.timestamp })
                   ] }),
-                  entry.detail && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted mt-0.5", children: entry.detail })
+                  entry.detail && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted mt-0.5", children: entry.detail })
                 ] })
               ]
             },
             i
           );
         }) }),
-        hasMore && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        hasMore && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           "button",
           {
             type: "button",
@@ -1733,6 +1793,7 @@ function ActivityLog({
   PageHeading,
   ProfileForm,
   ReportBreakdown,
+  ScoreCardRow,
   TeamHeatmap,
   TeamMemberRow,
   TeamPanelFooter,

@@ -287,8 +287,8 @@ declare function InboxNotification({ variant, brand, appLabel, title, body, time
  *  - Delivery status indicator (sent ✓ / pending ◌)
  *  - lastActivityAt for chronological sorting by consuming app
  */
-type Trend$1 = "up" | "down" | "flat";
-type MemberStatus$1 = "ok" | "attention";
+type Trend = "up" | "down" | "flat";
+type MemberStatus = "ok" | "attention";
 type DeliveryStatus = "delivered" | "pending" | "not_sent";
 interface TeamMemberRowProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
@@ -298,9 +298,9 @@ interface TeamMemberRowProps {
     /** Headline metric for this person, e.g. "Empathy 78" or "Util. 87%". */
     metricLabel: string;
     metricValue: string;
-    trend?: Trend$1;
+    trend?: Trend;
     /** "ok" → green check, "attention" → orange badge. */
-    status?: MemberStatus$1;
+    status?: MemberStatus;
     /** Whether the latest report/schedule was delivered to this person. */
     deliveryStatus?: DeliveryStatus;
     /** Enables checkbox selection for bulk actions. */
@@ -613,10 +613,6 @@ declare function ImportActivityRow({ label, detail, timestamp, status, onClick, 
  *
  * The component accepts generic areas so each app can define its own.
  */
-interface HeatmapCell {
-    /** Score 0–100. */
-    score: number;
-}
 interface HeatmapMember {
     name: string;
     /** Scores keyed by area name, matching `areas` order. */
@@ -694,50 +690,91 @@ interface ReportBreakdownProps {
 declare function ReportBreakdown({ brand, title, overallScore, previousOverallScore, areas, suggestions, maxSuggestions, className, }: ReportBreakdownProps): react_jsx_runtime.JSX.Element;
 
 /**
- * MemberDetailView — full-page layout for an individual team member,
- * opened when a manager clicks on a TeamMemberRow.
+ * MemberDetailView — header + back navigation + children slot for
+ * individual team member pages. The header is shared across apps;
+ * everything below is app-specific (passed as children).
  *
  * Source user stories:
- *  - ConsultFlow: US-CO-05 sc.3 — "Manager otwiera pełny widok wybranego
- *                 lekarza" + "widzi pełną historię trendów i podsumowania
- *                 raportów z ostatnich 3 miesięcy" + "może dodać notatkę
- *                 coachingową widoczną tylko dla managera"
- *  - CallFlow:    US-CF-04 sc.2 — "widzi rozmowę z wyróżnionym obszarem
- *                 słabości" + "może jednym kliknięciem oznaczyć rozmowę
- *                 jako 'omówiona'"
+ *  - ConsultFlow: US-CO-05 sc.3 — "Manager otwiera pełny widok
+ *                 wybranego lekarza"
+ *  - CallFlow:    US-CF-04 sc.2 — per-receptionist detail
  *
  * Role: MANAGER ONLY.
  *
- * This component provides the chrome (header, back nav, coaching notes).
- * The content area (TrendChart, ReportBreakdown, report list) is passed
- * as children so each app can compose its own detail layout.
+ * App-specific content examples (passed as children):
+ *  - CallFlow:  ScoreCardRow + recommendations checklist + impact +
+ *               ReportsTable
+ *  - ShiftFlow: individual schedule blocks + TrendChart + ActivityLog +
+ *               coaching note textarea
+ *  - ConsultFlow: TrendChart + ReportBreakdown + coaching note
  */
-type Trend = "up" | "down" | "flat";
-type MemberStatus = "ok" | "attention";
+type MemberDetailTrend = "up" | "down" | "flat";
+type MemberDetailStatus = "ok" | "attention";
+type MemberDeliveryBadge = "delivered" | "pending" | "not_sent";
 interface MemberDetailViewProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
-    /** Person's full name. */
     name: string;
-    /** Role / specialization shown under name. */
     subtitle?: string;
-    /** Headline metric, e.g. "Empathy Score". */
+    /** Headline metric label, e.g. "Quiz Score", "Utilizacja". */
     metricLabel?: string;
     metricValue?: string;
-    trend?: Trend;
-    status?: MemberStatus;
+    trend?: MemberDetailTrend;
+    status?: MemberDetailStatus;
+    /** Overall score displayed large in the header (e.g. 8.5 out of 10). */
+    overallScore?: number;
+    /** Previous overall score — shows "prev → current" delta. */
+    previousOverallScore?: number;
+    /** Delivery badge in header ("Gotowe" / "Oczekuje" / hidden). */
+    deliveryBadge?: MemberDeliveryBadge;
     /** Called when the back button is clicked. */
     onBack?: () => void;
-    /** Coaching note content (US-CO-05 sc.3). Manager-only, never visible to operator. */
-    coachingNote?: string;
-    /** Called when manager edits the coaching note. */
-    onCoachingNoteChange?: (note: string) => void;
-    /** Placeholder for the coaching note textarea. */
-    coachingNotePlaceholder?: string;
-    /** App-specific content: TrendChart, ReportBreakdown list, etc. */
+    /** Extra content rendered in the header's right side (custom badges, actions). */
+    headerActions?: React.ReactNode;
+    /** App-specific content below the header. */
     children: React.ReactNode;
     className?: string;
 }
-declare function MemberDetailView({ brand, name, subtitle, metricLabel, metricValue, trend, status, onBack, coachingNote, onCoachingNoteChange, coachingNotePlaceholder, children, className, }: MemberDetailViewProps): react_jsx_runtime.JSX.Element;
+declare function MemberDetailView({ brand, name, subtitle, metricLabel, metricValue, trend, status, overallScore, previousOverallScore, deliveryBadge, onBack, headerActions, children, className, }: MemberDetailViewProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * ScoreCardRow — horizontal row of score cards for an individual
+ * member's key areas. Each card shows area name, score, progress
+ * bar, and positive/negative indicator.
+ *
+ * Source user stories:
+ *  - CallFlow:    US-CF-02 sc.2 — "widzi wyniki dla obszarów: Empatia,
+ *                 Ton, Konwersja" + "najsłabszy obszar jest wyróżniony
+ *                 kolorem ❗"
+ *  - ConsultFlow: US-CO-02 sc.2 — "widzi wyniki dla 6 obszarów"
+ *
+ * Replaces the inline score card grid from CallFlow's custom layout
+ * and the per-area list from ReportBreakdown into a single reusable
+ * component. ReportBreakdown remains available for detailed report
+ * views with quotes and suggestions; ScoreCardRow is the compact
+ * overview used inside MemberDetailView.
+ *
+ * Score display:
+ *  - Raw score (0–100) is shown divided by 10 (e.g. 85 → 8.5) when
+ *    `displayScale` is "ten" (default for CallFlow/ConsultFlow).
+ *  - Raw score shown as-is + "%" when `displayScale` is "percent"
+ *    (default for ShiftFlow utilization).
+ */
+interface ScoreCard {
+    name: string;
+    /** Score 0–100. */
+    score: number;
+    /** Previous score for visual delta (not displayed, used for indicator). */
+    previousScore?: number;
+}
+interface ScoreCardRowProps {
+    cards: ScoreCard[];
+    /** How to display the score number. */
+    displayScale?: "ten" | "percent";
+    /** Number of columns in the grid. Auto-fits if not specified. */
+    columns?: number;
+    className?: string;
+}
+declare function ScoreCardRow({ cards, displayScale, columns, className, }: ScoreCardRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * DashboardLayout — two-column manager dashboard.
@@ -826,4 +863,4 @@ interface ActivityLogProps {
 }
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };

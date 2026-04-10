@@ -24,11 +24,6 @@ import { Badge } from "../primitives/Badge";
  * The component accepts generic areas so each app can define its own.
  */
 
-export interface HeatmapCell {
-  /** Score 0–100. */
-  score: number;
-}
-
 export interface HeatmapMember {
   name: string;
   /** Scores keyed by area name, matching `areas` order. */
