@@ -633,57 +633,52 @@ interface TeamHeatmapProps {
 declare function TeamHeatmap({ brand, areas, members, suggestion, onWeakestAreaClick, className, }: TeamHeatmapProps): react_jsx_runtime.JSX.Element;
 
 /**
- * ReportBreakdown — per-person detailed report with area scores,
- * highlighted weakness, and AI-generated suggestions tied to quotes.
+ * ReportBreakdown — per-report view with area scores displayed
+ * horizontally as compact cards, plus suggestions section below.
  *
  * Source user stories:
  *  - CallFlow:    US-CF-02 sc.2 — "widzi wyniki dla obszarów: Empatia, Ton,
  *                 Konwersja" + "najsłabszy obszar jest wyróżniony kolorem ❗"
- *                 + "sugestia nie jest ogólna — odnosi się do konkretnego
- *                 cytatu z tej rozmowy"
- *  - ConsultFlow: US-CO-02 sc.2 — "widzi wyniki dla 6 obszarów: Kompletność,
- *                 Wartość, Obiekcje, Struktura, Zaufanie, CTA" + "każdy obszar
- *                 zawiera cytat z nagrania z adnotacją ✓ lub ❗"
- *                 + sc.3 — "dokładnie 3 obszary priorytetowe na bieżący miesiąc"
+ *  - ConsultFlow: US-CO-02 sc.2 — "widzi wyniki dla 6 obszarów"
+ *                 + sc.3 — "dokładnie 3 obszary priorytetowe"
  *  - ConsultFlow: US-CO-01 sc.4 — "porównanie wyników: poprzedni vs aktualny"
  *
- * Role: accessible to both OPERATOR (own report) and MANAGER (any report).
- *
- * The component is generic: areas are passed as data, not hardcoded.
+ * Layout:
+ *   ┌─────────────────────────────────────────────────────┐
+ *   │ Title                               Overall: 7.8   │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐       │
+ *   │ │Empatia │ │  Ton   │ │Konwers.│ │ ...    │       │
+ *   │ │ 8.5  ✓ │ │ 5.8  ❗│ │ 7.1  ✓ │ │        │       │
+ *   │ │████░░░ │ │███░░░░ │ │█████░░ │ │        │       │
+ *   │ │"cyt."  │ │"cyt."  │ │        │ │        │       │
+ *   │ └────────┘ └────────┘ └────────┘ └────────┘       │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ ⚑ Priorytety (3)                                   │
+ *   │ [Obiekcje] Użyj techniki...                        │
+ *   │ [CTA] Zawsze kończ propozycją...                   │
+ *   └─────────────────────────────────────────────────────┘
  */
 interface BreakdownArea {
-    /** Area name, e.g. "Empatia", "Obiekcje". */
     name: string;
     /** Score 0–100. */
     score: number;
-    /** Previous score for delta comparison (US-CO-01 sc.4). */
     previousScore?: number;
-    /** Quote from the transcript backing this score. */
     quote?: string;
-    /** Annotation on the quote: positive or negative. */
     quoteType?: "positive" | "negative";
 }
 interface Suggestion {
-    /** Area this suggestion targets. */
     area: string;
-    /** The actionable suggestion text. */
     text: string;
-    /** Quote from the conversation that triggered this suggestion. */
     sourceQuote?: string;
 }
 interface ReportBreakdownProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
-    /** Report title, e.g. "Raport z rozmowy — 8 kwi 2026". */
     title?: string;
-    /** Overall score if applicable. */
     overallScore?: number;
-    /** Previous overall score for delta. */
     previousOverallScore?: number;
-    /** Scored areas. Weakest is auto-detected and highlighted. */
     areas: BreakdownArea[];
-    /** AI-generated suggestions (US-CF-02 sc.2 / US-CO-02 sc.3). */
     suggestions?: Suggestion[];
-    /** Max number of suggestions to show (ConsultFlow: 3). */
     maxSuggestions?: number;
     className?: string;
 }

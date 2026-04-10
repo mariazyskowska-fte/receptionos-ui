@@ -1328,20 +1328,15 @@ function scoreTone2(score) {
   if (score >= 50) return "warn";
   return "danger";
 }
-function scoreBg2(score) {
-  if (score >= 75) return "bg-ros-success-bg";
-  if (score >= 50) return "bg-[#fff7ed]";
-  return "bg-ros-danger-bg";
+function barColor(score) {
+  if (score >= 75) return "bg-ros-success-fg";
+  if (score >= 50) return "bg-ros-warn-fg";
+  return "bg-ros-danger-fg";
 }
 function scoreText2(score) {
   if (score >= 75) return "text-ros-success-fg";
   if (score >= 50) return "text-ros-warn-fg";
   return "text-ros-danger-fg";
-}
-function deltaString(current, previous) {
-  const diff = current - previous;
-  if (diff > 0) return `+${diff}`;
-  return `${diff}`;
 }
 function ReportBreakdown({
   brand = "callflow",
@@ -1357,10 +1352,8 @@ function ReportBreakdown({
     if (areas.length === 0) return null;
     return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
   }, [areas]);
-  const sortedAreas = React8.useMemo(() => {
-    return [...areas].sort((a, b) => a.score - b.score);
-  }, [areas]);
   const visibleSuggestions = suggestions?.slice(0, maxSuggestions);
+  const colClass = areas.length <= 3 ? "grid-cols-3" : areas.length <= 4 ? "grid-cols-4" : areas.length <= 6 ? "grid-cols-3 lg:grid-cols-6" : "grid-cols-3 lg:grid-cols-6";
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
     "div",
     {
@@ -1369,102 +1362,70 @@ function ReportBreakdown({
         className
       ),
       children: [
-        (title || overallScore != null) && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between p-6 pb-0", children: [
+        (title || overallScore != null) && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between px-5 pt-5 pb-3", children: [
           title && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: title }),
-          overallScore != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[28px] leading-none font-medium text-ros-ink", children: overallScore }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: "/100" }),
-            previousOverallScore != null && previousOverallScore !== overallScore && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-              Badge,
-              {
-                tone: overallScore >= previousOverallScore ? "success" : "danger",
-                children: deltaString(overallScore, previousOverallScore)
-              }
-            )
+          overallScore != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-baseline gap-2", children: [
+            previousOverallScore != null && previousOverallScore !== overallScore && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "text-[14px] text-ros-ink-muted", children: [
+              previousOverallScore,
+              " \u2192"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[24px] leading-none font-medium text-ros-ink", children: overallScore }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: "/100" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "p-6 flex flex-col gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Breakdown" }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-col gap-2", children: sortedAreas.map((area) => {
-            const isWeakest = weakestArea && area.name === weakestArea.name;
-            return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-              "div",
-              {
-                className: cn(
-                  "flex flex-col gap-2 p-3 rounded-input border transition-colors duration-150",
-                  isWeakest ? "border-ros-danger-fg/30 bg-ros-danger-bg/30" : "border-ros-border bg-white"
-                ),
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
-                      isWeakest && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px]", "aria-label": "Najs\u0142abszy obszar", children: "\u2757" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: area.name })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-                        "div",
-                        {
-                          className: cn(
-                            "px-2.5 py-0.5 rounded-pill text-[14px] font-bold",
-                            scoreBg2(area.score),
-                            scoreText2(area.score)
-                          ),
-                          children: area.score
-                        }
-                      ),
-                      area.previousScore != null && area.previousScore !== area.score && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-                        Badge,
-                        {
-                          tone: area.score >= area.previousScore ? "success" : "danger",
-                          children: deltaString(area.score, area.previousScore)
-                        }
-                      )
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "w-full h-1.5 bg-ros-surface-off rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-                    "div",
-                    {
-                      className: cn(
-                        "h-full rounded-pill transition-all duration-300",
-                        area.score >= 75 ? "bg-ros-success-fg" : area.score >= 50 ? "bg-ros-warn-fg" : "bg-ros-danger-fg"
-                      ),
-                      style: { width: `${Math.min(100, Math.max(0, area.score))}%` }
-                    }
-                  ) }),
-                  area.quote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start gap-2 mt-1", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[12px] flex-shrink-0 mt-0.5", children: area.quoteType === "positive" ? "\u2713" : "\u2757" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted italic", children: [
-                      "\u201E",
-                      area.quote,
-                      '"'
-                    ] })
-                  ] })
-                ]
-              },
-              area.name
-            );
-          }) })
-        ] }),
-        visibleSuggestions && visibleSuggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "border-t border-ros-border p-6 flex flex-col gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: visibleSuggestions.length === 1 ? "Sugestia" : `Priorytety (${visibleSuggestions.length})` }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-col gap-3", children: visibleSuggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn("grid gap-2 px-5 pb-5", colClass), children: areas.map((area) => {
+          const isWeakest = weakestArea && area.name === weakestArea.name;
+          const isPositive = area.score >= 70;
+          return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
             "div",
             {
-              className: "flex flex-col gap-1.5 p-3 rounded-input bg-ros-surface-off border border-ros-border",
+              className: cn(
+                "rounded-stat p-3 flex flex-col gap-1.5",
+                isWeakest ? "bg-ros-danger-bg/50 ring-1 ring-ros-danger-fg/20" : "bg-ros-surface-off"
+              ),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Badge, { tone: scoreTone2(
-                  areas.find((a) => a.name === s.area)?.score ?? 0
-                ), children: s.area }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[14px] leading-[20px] text-ros-ink", children: s.text }),
-                s.sourceQuote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted italic", children: [
-                  "Kontekst: \u201E",
-                  s.sourceQuote,
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate", children: area.name }),
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: cn("text-[11px]", scoreText2(area.score)), children: isPositive ? "\u2713" : "\u2757" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: cn("text-[20px] leading-none font-bold", scoreText2(area.score)), children: area.score > 0 ? (area.score / 10).toFixed(1) : "\u2014" }),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "w-full h-1 bg-ros-border rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+                  "div",
+                  {
+                    className: cn("h-full rounded-pill", barColor(area.score)),
+                    style: { width: `${Math.min(100, Math.max(0, area.score))}%` }
+                  }
+                ) }),
+                area.quote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[10px] leading-[14px] text-ros-ink-muted italic line-clamp-2 mt-0.5", children: [
+                  "\u201E",
+                  area.quote,
                   '"'
                 ] })
               ]
             },
-            i
-          )) })
+            area.name
+          );
+        }) }),
+        visibleSuggestions && visibleSuggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "border-t border-ros-border px-5 py-4 flex flex-col gap-2.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: visibleSuggestions.length === 1 ? "Sugestia" : `Priorytety (${visibleSuggestions.length})` }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-col gap-2", children: visibleSuggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start gap-2.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+              Badge,
+              {
+                tone: scoreTone2(areas.find((a) => a.name === s.area)?.score ?? 0),
+                className: "mt-0.5 flex-shrink-0",
+                children: s.area
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex flex-col gap-0.5 min-w-0", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[13px] leading-[18px] text-ros-ink", children: s.text }),
+              s.sourceQuote && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-[11px] leading-[14px] text-ros-ink-muted italic truncate", children: [
+                "\u201E",
+                s.sourceQuote,
+                '"'
+              ] })
+            ] })
+          ] }, i)) })
         ] })
       ]
     }
@@ -1584,7 +1545,7 @@ function MemberDetailView({
 
 // src/patterns/ScoreCardRow.tsx
 var import_jsx_runtime19 = require("react/jsx-runtime");
-function barColor(score) {
+function barColor2(score) {
   if (score >= 75) return "bg-ros-success-fg";
   if (score >= 50) return "bg-ros-warn-fg";
   return "bg-ros-danger-fg";
@@ -1623,7 +1584,7 @@ function ScoreCardRow({
             {
               className: cn(
                 "h-full rounded-pill transition-all duration-300",
-                barColor(card.score)
+                barColor2(card.score)
               ),
               style: { width: `${Math.min(100, Math.max(0, card.score))}%` }
             }
