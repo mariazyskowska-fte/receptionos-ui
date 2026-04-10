@@ -36,6 +36,7 @@ __export(index_exports, {
   Button: () => Button,
   Card: () => Card,
   DashboardHeader: () => DashboardHeader,
+  DashboardLayout: () => DashboardLayout,
   EmptyState: () => EmptyState,
   ImportBatchRow: () => ImportBatchRow,
   ImportDropZone: () => ImportDropZone,
@@ -1144,89 +1145,73 @@ function TeamHeatmap({
     "div",
     {
       className: cn(
-        "rounded-card border border-ros-border bg-white p-6 flex flex-col gap-4",
+        "rounded-card border border-ros-border bg-white p-4 flex flex-col gap-3",
         className
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: "Heatmapa obszar\xF3w" }),
-          weakest && weakest.avg < 75 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Badge, { tone: scoreTone(weakest.avg), children: [
-            "Najs\u0142abszy: ",
-            weakest.area,
-            " (",
-            weakest.avg,
-            "%)"
-          ] })
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Obszary" }),
+            weakest && weakest.avg < 75 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Badge, { tone: scoreTone(weakest.avg), children: [
+              weakest.area,
+              " ",
+              weakest.avg,
+              "%"
+            ] })
+          ] }),
+          suggestion && weakest && weakest.avg < 75 && onWeakestAreaClick && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
+            "button",
+            {
+              type: "button",
+              onClick: () => onWeakestAreaClick(weakest.area),
+              className: cn(
+                "text-[12px] leading-[16px] font-medium border-none bg-transparent cursor-pointer p-0",
+                brand === "callflow" && "text-brand-callflow",
+                brand === "consultflow" && "text-brand-consultflow",
+                brand === "shiftflow" && "text-brand-shiftflow"
+              ),
+              children: [
+                suggestion,
+                " \u2192"
+              ]
+            }
+          )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("table", { className: "w-full border-collapse", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("th", { className: "text-left text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 pr-3 min-w-[120px]", children: "Osoba" }),
-            areas.map((area) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-              "th",
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "flex gap-1.5", children: areaAverages.map(({ area, avg }) => {
+          const isWeakest = weakest && area === weakest.area;
+          return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
+            "div",
+            {
+              className: cn(
+                "flex-1 flex flex-col items-center gap-1 p-2 rounded-input",
+                scoreBg(avg),
+                isWeakest && "ring-1 ring-ros-warn-fg/40"
+              ),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-[10px] leading-[12px] font-medium text-ros-ink-muted text-center truncate w-full", children: area }),
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: cn("text-[18px] leading-none font-bold", scoreText(avg)), children: avg > 0 ? avg : "\u2014" })
+              ]
+            },
+            area
+          );
+        }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "flex flex-col gap-0.5", children: members.map((member) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center gap-2 py-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-[12px] leading-[16px] text-ros-ink-medium w-[100px] truncate flex-shrink-0", children: member.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "flex gap-1 flex-1", children: areas.map((area) => {
+            const score = member.scores[area] ?? 0;
+            return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+              "div",
               {
-                className: "text-center text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 px-2 min-w-[72px]",
-                children: area
+                className: cn(
+                  "flex-1 h-2 rounded-pill",
+                  score >= 75 ? "bg-ros-success-fg/60" : score >= 50 ? "bg-ros-warn-fg/60" : score > 0 ? "bg-ros-danger-fg/60" : "bg-ros-surface-off"
+                ),
+                title: `${member.name} \xB7 ${area}: ${score}`
               },
               area
-            ))
-          ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tbody", { children: [
-            members.map((member) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { className: "border-t border-ros-border", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "text-[14px] leading-[20px] font-medium text-ros-ink py-2 pr-3", children: member.name }),
-              areas.map((area) => {
-                const score = member.scores[area] ?? 0;
-                const isWeakest = weakest && area === weakest.area && score > 0 && score <= weakest.avg;
-                return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "py-2 px-2", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  "div",
-                  {
-                    className: cn(
-                      "flex items-center justify-center h-8 rounded-stat text-[14px] font-medium transition-colors duration-150",
-                      scoreBg(score),
-                      scoreText(score),
-                      isWeakest && "ring-2 ring-ros-warn-fg/30"
-                    ),
-                    children: score > 0 ? `${score}` : "\u2014"
-                  }
-                ) }, area);
-              })
-            ] }, member.name)),
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("tr", { className: "border-t-2 border-ros-ink-faint", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted py-2 pr-3", children: "\u015Arednia zespo\u0142u" }),
-              areaAverages.map(({ area, avg }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("td", { className: "py-2 px-2", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                "div",
-                {
-                  className: cn(
-                    "flex items-center justify-center h-8 rounded-stat text-[14px] font-bold",
-                    scoreBg(avg),
-                    scoreText(avg),
-                    weakest && area === weakest.area && "ring-2 ring-ros-warn-fg/30"
-                  ),
-                  children: avg > 0 ? `${avg}` : "\u2014"
-                }
-              ) }, area))
-            ] })
-          ] })
-        ] }) }),
-        suggestion && weakest && weakest.avg < 75 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-start gap-3 p-3 rounded-input bg-[#fff7ed] border border-ros-warn-fg/20", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-ros-warn-fg text-[14px] flex-shrink-0 mt-0.5", children: "\u2691" }),
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex flex-col gap-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: suggestion }),
-            onWeakestAreaClick && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-              "button",
-              {
-                type: "button",
-                onClick: () => onWeakestAreaClick(weakest.area),
-                className: cn(
-                  "text-[12px] leading-[16px] font-medium text-left border-none bg-transparent cursor-pointer p-0",
-                  brand === "callflow" && "text-brand-callflow",
-                  brand === "consultflow" && "text-brand-consultflow",
-                  brand === "shiftflow" && "text-brand-shiftflow"
-                ),
-                children: "Zobacz wszystkie raporty z tym problemem \u2192"
-              }
-            )
-          ] })
-        ] })
+            );
+          }) })
+        ] }, member.name)) })
       ]
     }
   );
@@ -1487,6 +1472,23 @@ function MemberDetailView({
     ] })
   ] });
 }
+
+// src/patterns/DashboardLayout.tsx
+var import_jsx_runtime19 = require("react/jsx-runtime");
+function DashboardLayout({
+  children,
+  panel,
+  panelTitle = "Zesp\xF3\u0142",
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: cn("flex gap-6 items-start", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel })
+    ] })
+  ] });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AppHeader,
@@ -1495,6 +1497,7 @@ function MemberDetailView({
   Button,
   Card,
   DashboardHeader,
+  DashboardLayout,
   EmptyState,
   ImportBatchRow,
   ImportDropZone,

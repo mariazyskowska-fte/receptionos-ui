@@ -98,117 +98,93 @@ export function TeamHeatmap({
   return (
     <div
       className={cn(
-        "rounded-card border border-ros-border bg-white p-6 flex flex-col gap-4",
+        "rounded-card border border-ros-border bg-white p-4 flex flex-col gap-3",
         className,
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-[14px] leading-[20px] font-medium text-ros-ink">
-          Heatmapa obszarów
-        </p>
-        {weakest && weakest.avg < 75 && (
-          <Badge tone={scoreTone(weakest.avg)}>
-            Najsłabszy: {weakest.area} ({weakest.avg}%)
-          </Badge>
+      {/* Header — compact, with weakest area + suggestion inline */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <p className="text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide">
+            Obszary
+          </p>
+          {weakest && weakest.avg < 75 && (
+            <Badge tone={scoreTone(weakest.avg)}>
+              {weakest.area} {weakest.avg}%
+            </Badge>
+          )}
+        </div>
+        {suggestion && weakest && weakest.avg < 75 && onWeakestAreaClick && (
+          <button
+            type="button"
+            onClick={() => onWeakestAreaClick(weakest.area)}
+            className={cn(
+              "text-[12px] leading-[16px] font-medium border-none bg-transparent cursor-pointer p-0",
+              brand === "callflow" && "text-brand-callflow",
+              brand === "consultflow" && "text-brand-consultflow",
+              brand === "shiftflow" && "text-brand-shiftflow",
+            )}
+          >
+            {suggestion} →
+          </button>
         )}
       </div>
 
-      {/* Grid */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <th className="text-left text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 pr-3 min-w-[120px]">
-                Osoba
-              </th>
-              {areas.map((area) => (
-                <th
-                  key={area}
-                  className="text-center text-[12px] leading-[16px] font-medium text-ros-ink-muted py-2 px-2 min-w-[72px]"
-                >
-                  {area}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => (
-              <tr key={member.name} className="border-t border-ros-border">
-                <td className="text-[14px] leading-[20px] font-medium text-ros-ink py-2 pr-3">
-                  {member.name}
-                </td>
-                {areas.map((area) => {
-                  const score = member.scores[area] ?? 0;
-                  const isWeakest =
-                    weakest && area === weakest.area && score > 0 && score <= weakest.avg;
-                  return (
-                    <td key={area} className="py-2 px-2">
-                      <div
-                        className={cn(
-                          "flex items-center justify-center h-8 rounded-stat text-[14px] font-medium transition-colors duration-150",
-                          scoreBg(score),
-                          scoreText(score),
-                          isWeakest && "ring-2 ring-ros-warn-fg/30",
-                        )}
-                      >
-                        {score > 0 ? `${score}` : "—"}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-
-            {/* Averages row */}
-            <tr className="border-t-2 border-ros-ink-faint">
-              <td className="text-[12px] leading-[16px] font-semibold text-ros-ink-muted py-2 pr-3">
-                Średnia zespołu
-              </td>
-              {areaAverages.map(({ area, avg }) => (
-                <td key={area} className="py-2 px-2">
-                  <div
-                    className={cn(
-                      "flex items-center justify-center h-8 rounded-stat text-[14px] font-bold",
-                      scoreBg(avg),
-                      scoreText(avg),
-                      weakest && area === weakest.area && "ring-2 ring-ros-warn-fg/30",
-                    )}
-                  >
-                    {avg > 0 ? `${avg}` : "—"}
-                  </div>
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+      {/* Compact grid — area averages as horizontal bar row */}
+      <div className="flex gap-1.5">
+        {areaAverages.map(({ area, avg }) => {
+          const isWeakest = weakest && area === weakest.area;
+          return (
+            <div
+              key={area}
+              className={cn(
+                "flex-1 flex flex-col items-center gap-1 p-2 rounded-input",
+                scoreBg(avg),
+                isWeakest && "ring-1 ring-ros-warn-fg/40",
+              )}
+            >
+              <span className="text-[10px] leading-[12px] font-medium text-ros-ink-muted text-center truncate w-full">
+                {area}
+              </span>
+              <span className={cn("text-[18px] leading-none font-bold", scoreText(avg))}>
+                {avg > 0 ? avg : "—"}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Suggestion */}
-      {suggestion && weakest && weakest.avg < 75 && (
-        <div className="flex items-start gap-3 p-3 rounded-input bg-[#fff7ed] border border-ros-warn-fg/20">
-          <span className="text-ros-warn-fg text-[14px] flex-shrink-0 mt-0.5">⚑</span>
-          <div className="flex flex-col gap-1">
-            <p className="text-[14px] leading-[20px] font-medium text-ros-ink">
-              {suggestion}
-            </p>
-            {onWeakestAreaClick && (
-              <button
-                type="button"
-                onClick={() => onWeakestAreaClick(weakest.area)}
-                className={cn(
-                  "text-[12px] leading-[16px] font-medium text-left border-none bg-transparent cursor-pointer p-0",
-                  brand === "callflow" && "text-brand-callflow",
-                  brand === "consultflow" && "text-brand-consultflow",
-                  brand === "shiftflow" && "text-brand-shiftflow",
-                )}
-              >
-                Zobacz wszystkie raporty z tym problemem →
-              </button>
-            )}
+      {/* Per-member mini rows — only names + dots, no full table */}
+      <div className="flex flex-col gap-0.5">
+        {members.map((member) => (
+          <div key={member.name} className="flex items-center gap-2 py-1">
+            <span className="text-[12px] leading-[16px] text-ros-ink-medium w-[100px] truncate flex-shrink-0">
+              {member.name}
+            </span>
+            <div className="flex gap-1 flex-1">
+              {areas.map((area) => {
+                const score = member.scores[area] ?? 0;
+                return (
+                  <div
+                    key={area}
+                    className={cn(
+                      "flex-1 h-2 rounded-pill",
+                      score >= 75
+                        ? "bg-ros-success-fg/60"
+                        : score >= 50
+                          ? "bg-ros-warn-fg/60"
+                          : score > 0
+                            ? "bg-ros-danger-fg/60"
+                            : "bg-ros-surface-off",
+                    )}
+                    title={`${member.name} · ${area}: ${score}`}
+                  />
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

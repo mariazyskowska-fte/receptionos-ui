@@ -60,3 +60,7 @@ export {
   MemberDetailView,
   type MemberDetailViewProps,
 } from "./MemberDetailView";
+export {
+  DashboardLayout,
+  type DashboardLayoutProps,
+} from "./DashboardLayout";

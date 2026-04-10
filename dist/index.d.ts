@@ -647,4 +647,34 @@ interface MemberDetailViewProps {
 }
 declare function MemberDetailView({ brand, name, subtitle, metricLabel, metricValue, trend, status, onBack, coachingNote, onCoachingNoteChange, coachingNotePlaceholder, children, className, }: MemberDetailViewProps): react_jsx_runtime.JSX.Element;
 
-export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * DashboardLayout — two-column manager dashboard following the locked
+ * layout spec from `UI/design-system-audit/01-layout.md`:
+ *
+ *   ┌──────────────────────────────┬─────────────────┐
+ *   │  MAIN (flex-1)              │  PANEL (384px)   │
+ *   │  DashboardHeader            │  "Zespół"        │
+ *   │  TrendChart                 │  TeamMemberRow   │
+ *   │  TeamHeatmap (compact)      │  TeamMemberRow   │
+ *   │                             │  TeamMemberRow   │
+ *   │                             │  ...scrollable   │
+ *   └──────────────────────────────┴─────────────────┘
+ *
+ * The right panel is fixed-width, scrollable independently, and holds
+ * the team member list. This keeps the list always visible while the
+ * manager reviews charts and heatmaps on the left.
+ *
+ * Role: MANAGER ONLY.
+ */
+interface DashboardLayoutProps {
+    /** Main content: DashboardHeader, TrendChart, TeamHeatmap, etc. */
+    children: React.ReactNode;
+    /** Right panel content: TeamMemberRow list. */
+    panel: React.ReactNode;
+    /** Optional panel header (defaults to "Zespół"). */
+    panelTitle?: string;
+    className?: string;
+}
+declare function DashboardLayout({ children, panel, panelTitle, className, }: DashboardLayoutProps): react_jsx_runtime.JSX.Element;
+
+export { AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
