@@ -43,7 +43,10 @@ export {
 } from "./ImportBatchRow";
 export {
   ImportPageLayout,
+  ImportActivityRow,
   type ImportPageLayoutProps,
+  type ImportActivityRowProps,
+  type ImportActivityStatus,
 } from "./ImportPageLayout";
 export {
   TeamHeatmap,

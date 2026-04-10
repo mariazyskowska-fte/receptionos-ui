@@ -1080,12 +1080,71 @@ function ImportPageLayout({
   description,
   actions,
   children,
+  panel,
+  panelTitle = "Aktywno\u015B\u0107",
   className
 }) {
-  return /* @__PURE__ */ jsxs12("div", { className: cn("flex flex-col gap-6 max-w-2xl mx-auto", className), children: [
-    /* @__PURE__ */ jsx15(PageHeading, { title, description, actions }),
-    children
+  if (!panel) {
+    return /* @__PURE__ */ jsxs12("div", { className: cn("flex flex-col gap-6 max-w-2xl mx-auto", className), children: [
+      /* @__PURE__ */ jsx15(PageHeading, { title, description, actions }),
+      children
+    ] });
+  }
+  return /* @__PURE__ */ jsxs12("div", { className: cn("flex gap-6 items-start", className), children: [
+    /* @__PURE__ */ jsxs12("div", { className: "flex-1 min-w-0 flex flex-col gap-6", children: [
+      /* @__PURE__ */ jsx15(PageHeading, { title, description, actions }),
+      children
+    ] }),
+    /* @__PURE__ */ jsxs12("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
+      /* @__PURE__ */ jsx15("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ jsx15("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
+      /* @__PURE__ */ jsx15("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel })
+    ] })
   ] });
+}
+var statusDot = {
+  sent: { color: "bg-ros-warn-fg", title: "Wys\u0142ano" },
+  read: { color: "bg-ros-success-fg", title: "Odczytano" },
+  pending: { color: "bg-ros-warn-fg", title: "Oczekuje" },
+  done: { color: "bg-ros-success-fg", title: "Zrealizowano" },
+  analyzing: { color: "bg-ros-warn-fg", title: "Analizuj\u0119" },
+  error: { color: "bg-ros-danger-fg", title: "B\u0142\u0105d" }
+};
+function ImportActivityRow({
+  label,
+  detail,
+  timestamp,
+  status,
+  onClick,
+  className
+}) {
+  const dot = status ? statusDot[status] : null;
+  return /* @__PURE__ */ jsxs12(
+    "div",
+    {
+      className: cn(
+        "flex items-center gap-2.5 px-3 py-2 rounded-input transition-colors duration-150",
+        onClick && "cursor-pointer hover:bg-ros-surface-hover",
+        className
+      ),
+      onClick,
+      role: onClick ? "button" : void 0,
+      tabIndex: onClick ? 0 : void 0,
+      children: [
+        dot && /* @__PURE__ */ jsx15(
+          "span",
+          {
+            className: cn("size-2 rounded-pill flex-shrink-0", dot.color),
+            title: dot.title
+          }
+        ),
+        /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-0 flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsx15("div", { className: "flex items-center gap-1.5", children: /* @__PURE__ */ jsx15("p", { className: "text-[13px] font-medium text-ros-ink truncate", children: label }) }),
+          detail && /* @__PURE__ */ jsx15("p", { className: "text-[11px] text-ros-ink-muted truncate", children: detail })
+        ] }),
+        timestamp && /* @__PURE__ */ jsx15("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0", children: timestamp })
+      ]
+    }
+  );
 }
 
 // src/patterns/TeamHeatmap.tsx
@@ -1609,6 +1668,7 @@ export {
   DashboardHeader,
   DashboardLayout,
   EmptyState,
+  ImportActivityRow,
   ImportBatchRow,
   ImportDropZone,
   ImportPageLayout,

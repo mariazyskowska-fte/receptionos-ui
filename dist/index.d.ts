@@ -479,18 +479,75 @@ interface ImportBatchRowProps {
 declare function ImportBatchRow({ brand, fileName, subtitle, status, progress, statusLabel, timestamp, ctaLabel, onCta, ctaLoading, className, }: ImportBatchRowProps): react_jsx_runtime.JSX.Element;
 
 /**
- * ImportPageLayout — page-level wrapper for the Import tab.
+ * ImportPageLayout — two-column layout for the Import tab.
  *
- * Composes PageHeading + a content area (ImportDropZone + ImportBatchRow
- * list). Ensures consistent vertical spacing and max-width across all
- * three receptionOS apps.
+ * Mirrors the DashboardLayout pattern: main content area (left) with
+ * import tools, and a right panel (384px) showing activity feed.
  *
- * Usage:
- *   <ImportPageLayout brand="callflow" title="Import rozmów" description="...">
+ *   ┌──────────────────────────────┬──────────────────┐
+ *   │  PageHeading                 │  panelTitle       │
+ *   │  "Import rozmów"            │  ──────────────── │
+ *   │                              │  ActivityRow      │
+ *   │  ImportDropZone              │  ActivityRow      │
+ *   │                              │  ActivityRow      │
+ *   │  ImportBatchRow              │  ...scrollable    │
+ *   │  ImportBatchRow              │                   │
+ *   │                              │                   │
+ *   └──────────────────────────────┴──────────────────┘
+ *
+ * Right panel content varies per app:
+ *  - CallFlow:    delivery log — sent reports + read status per
+ *                 receptionist (US-CF-02 sc.1 "raport gotowy",
+ *                 tracking viewed_at)
+ *  - ShiftFlow:   incoming requests — schedule change requests +
+ *                 preference updates from doctors (US-SF-03 sc.1
+ *                 "zgłasza nieobecność", US-SF-03 sc.2
+ *                 "zaktualizował preferencje")
+ *  - ConsultFlow: upload + analysis status — audio uploads and
+ *                 their processing state (US-CO-01 sc.1
+ *                 "analiza gotowa w ciągu 24h")
+ *
+ * Usage (CallFlow):
+ *   <ImportPageLayout
+ *     brand="callflow"
+ *     title="Import rozmów"
+ *     description="Wgraj plik CSV z transkryptami."
+ *     panelTitle="Ostatnie wysyłki"
+ *     panel={
+ *       sentReports.map(r => (
+ *         <ImportActivityRow
+ *           key={r.id}
+ *           label={r.receptionist_name}
+ *           detail={r.file_name}
+ *           timestamp="2 min temu"
+ *           status={r.viewed_at ? "read" : "sent"}
+ *         />
+ *       ))
+ *     }
+ *   >
  *     <ImportDropZone ... />
- *     <div className="space-y-2">
- *       {batches.map(b => <ImportBatchRow ... />)}
- *     </div>
+ *     {batches.map(b => <ImportBatchRow ... />)}
+ *   </ImportPageLayout>
+ *
+ * Usage (ShiftFlow):
+ *   <ImportPageLayout
+ *     brand="shiftflow"
+ *     title="Import grafiku"
+ *     description="Wgraj CSV lub wklej tekst."
+ *     panelTitle="Prośby od lekarzy"
+ *     panel={
+ *       requests.map(r => (
+ *         <ImportActivityRow
+ *           key={r.id}
+ *           label={r.doctorName}
+ *           detail={r.type === 'absence' ? 'Nieobecność' : 'Zmiana preferencji'}
+ *           timestamp={r.date}
+ *           status={r.resolved ? "done" : "pending"}
+ *         />
+ *       ))
+ *     }
+ *   >
+ *     <ImportDropZone ... />
  *   </ImportPageLayout>
  */
 interface ImportPageLayoutProps {
@@ -499,10 +556,41 @@ interface ImportPageLayoutProps {
     description?: string;
     /** Right-aligned actions in the heading (e.g. help link). */
     actions?: React.ReactNode;
+    /** Main content: ImportDropZone + ImportBatchRow list. */
     children: React.ReactNode;
+    /** Right panel content: activity feed rows. */
+    panel?: React.ReactNode;
+    /** Right panel header (e.g. "Ostatnie wysyłki", "Prośby od lekarzy"). */
+    panelTitle?: string;
     className?: string;
 }
-declare function ImportPageLayout({ title, description, actions, children, className, }: ImportPageLayoutProps): react_jsx_runtime.JSX.Element;
+declare function ImportPageLayout({ title, description, actions, children, panel, panelTitle, className, }: ImportPageLayoutProps): react_jsx_runtime.JSX.Element;
+/**
+ * ImportActivityRow — single row in the Import panel's activity feed.
+ *
+ * Mirrors the compact style of TeamMemberRow but for event tracking:
+ * status dot + label + detail + timestamp.
+ *
+ * Cross-app semantics:
+ *  - CallFlow:    label=receptionist, detail=file, status=read/sent/error
+ *  - ShiftFlow:   label=doctor, detail="Nieobecność"/"Zmiana preferencji",
+ *                 status=pending/done
+ *  - ConsultFlow: label=doctor, detail="Upload audio", status=analyzing/done/error
+ */
+type ImportActivityStatus = "sent" | "read" | "pending" | "done" | "analyzing" | "error";
+interface ImportActivityRowProps {
+    /** Person or entity name. */
+    label: string;
+    /** Event description. */
+    detail?: string;
+    /** Timestamp string. */
+    timestamp?: string;
+    status?: ImportActivityStatus;
+    /** Called when row is clicked (e.g. to open detail). */
+    onClick?: () => void;
+    className?: string;
+}
+declare function ImportActivityRow({ label, detail, timestamp, status, onClick, className, }: ImportActivityRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * TeamHeatmap — grid showing team-wide area scores as a color-coded matrix.
@@ -738,4 +826,4 @@ interface ActivityLogProps {
 }
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapCell, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, MemberDetailView, type MemberDetailViewProps, type MemberStatus$1 as MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend$1 as Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
