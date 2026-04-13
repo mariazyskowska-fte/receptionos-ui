@@ -1793,6 +1793,185 @@ function ActivityLog({
     }
   );
 }
+
+// src/patterns/SwipeView.tsx
+import * as React11 from "react";
+import { jsx as jsx23, jsxs as jsxs20 } from "react/jsx-runtime";
+var brandDot = {
+  callflow: "bg-brand-callflow",
+  consultflow: "bg-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow"
+};
+function SwipeView({
+  pages,
+  initialPage = 0,
+  onPageChange,
+  brand = "callflow",
+  className
+}) {
+  const scrollRef = React11.useRef(null);
+  const [activeIndex, setActiveIndex] = React11.useState(initialPage);
+  React11.useEffect(() => {
+    if (scrollRef.current && initialPage > 0) {
+      const width = scrollRef.current.offsetWidth;
+      scrollRef.current.scrollLeft = width * initialPage;
+    }
+  }, []);
+  React11.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let ticking = false;
+    function handleScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        if (!el) return;
+        const width = el.offsetWidth;
+        const index = Math.round(el.scrollLeft / width);
+        const clamped = Math.max(0, Math.min(index, pages.length - 1));
+        setActiveIndex((prev) => {
+          if (prev !== clamped) {
+            onPageChange?.(pages[clamped].key, clamped);
+          }
+          return clamped;
+        });
+        ticking = false;
+      });
+    }
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [pages, onPageChange]);
+  function scrollToPage(index) {
+    if (!scrollRef.current) return;
+    const width = scrollRef.current.offsetWidth;
+    scrollRef.current.scrollTo({ left: width * index, behavior: "smooth" });
+  }
+  return /* @__PURE__ */ jsxs20("div", { className: cn("flex flex-col", className), children: [
+    /* @__PURE__ */ jsx23("div", { className: "flex items-center justify-center gap-4 py-3 px-4", children: pages.map((page, i) => /* @__PURE__ */ jsxs20(
+      "button",
+      {
+        type: "button",
+        onClick: () => scrollToPage(i),
+        className: "flex flex-col items-center gap-1 bg-transparent border-none cursor-pointer p-0",
+        "aria-label": page.label,
+        children: [
+          /* @__PURE__ */ jsx23(
+            "span",
+            {
+              className: cn(
+                "text-[11px] leading-[14px] font-medium transition-colors duration-150",
+                i === activeIndex ? "text-ros-ink" : "text-ros-ink-faint"
+              ),
+              children: page.label
+            }
+          ),
+          /* @__PURE__ */ jsx23(
+            "div",
+            {
+              className: cn(
+                "h-1.5 rounded-pill transition-all duration-200",
+                i === activeIndex ? cn("w-6", brandDot[brand]) : "w-1.5 bg-ros-ink-faint/40"
+              )
+            }
+          )
+        ]
+      },
+      page.key
+    )) }),
+    /* @__PURE__ */ jsx23(
+      "div",
+      {
+        ref: scrollRef,
+        className: "flex overflow-x-auto snap-x snap-mandatory scrollbar-hide",
+        style: { WebkitOverflowScrolling: "touch", scrollbarWidth: "none" },
+        children: pages.map((page) => /* @__PURE__ */ jsx23(
+          "div",
+          {
+            className: "w-full flex-shrink-0 snap-center",
+            children: page.content
+          },
+          page.key
+        ))
+      }
+    )
+  ] });
+}
+
+// src/patterns/ReportCard.tsx
+import { jsx as jsx24, jsxs as jsxs21 } from "react/jsx-runtime";
+var statusConfig2 = {
+  completed: { label: "\u2713", tone: "success" },
+  analyzing: { label: "...", tone: "warn" },
+  pending: { label: "\u2191", tone: "neutral" },
+  error: { label: "!", tone: "danger" }
+};
+var brandBg4 = {
+  callflow: "bg-brand-callflow/10 text-brand-callflow",
+  consultflow: "bg-brand-consultflow/10 text-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow/10 text-brand-shiftflow"
+};
+function scoreColor(score) {
+  if (score >= 8) return "text-ros-success-fg";
+  if (score >= 6) return "text-ros-warn-fg";
+  return "text-ros-danger-fg";
+}
+function ReportCard({
+  brand = "callflow",
+  label,
+  date,
+  subtitle,
+  status,
+  score,
+  scoreDetails,
+  onOpen,
+  className
+}) {
+  const cfg = statusConfig2[status];
+  return /* @__PURE__ */ jsxs21(
+    "button",
+    {
+      type: "button",
+      onClick: onOpen,
+      className: cn(
+        "w-full text-left rounded-stat bg-white border border-ros-border p-3.5 flex items-center gap-3 transition-colors duration-150 active:bg-ros-surface-hover cursor-pointer",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ jsx24(
+          "div",
+          {
+            className: cn(
+              "size-10 rounded-pill flex items-center justify-center flex-shrink-0 text-[13px] font-bold",
+              brandBg4[brand]
+            ),
+            children: label
+          }
+        ),
+        /* @__PURE__ */ jsxs21("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsxs21("p", { className: "text-[14px] font-medium text-ros-ink truncate", children: [
+            "Pacjent ",
+            label
+          ] }),
+          /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-2 text-[11px] text-ros-ink-muted", children: [
+            /* @__PURE__ */ jsx24("span", { children: date }),
+            subtitle && /* @__PURE__ */ jsxs21("span", { children: [
+              "\xB7 ",
+              subtitle
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
+          scoreDetails && scoreDetails.length > 0 && /* @__PURE__ */ jsx24("div", { className: "hidden sm:flex gap-2", children: scoreDetails.map((d) => /* @__PURE__ */ jsxs21("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsx24("div", { className: cn("text-[12px] font-bold", scoreColor(d.value)), children: d.value.toFixed(1) }),
+            /* @__PURE__ */ jsx24("div", { className: "text-[9px] text-ros-ink-faint", children: d.label })
+          ] }, d.label)) }),
+          status === "completed" && score != null && /* @__PURE__ */ jsx24("div", { className: "px-2 py-0.5 rounded-input bg-ros-surface-off", children: /* @__PURE__ */ jsx24("span", { className: cn("text-[16px] font-bold", scoreColor(score)), children: score.toFixed(1) }) }),
+          /* @__PURE__ */ jsx24(Badge, { tone: cfg.tone, children: cfg.label })
+        ] })
+      ]
+    }
+  );
+}
 export {
   ActivityLog,
   AppHeader,
@@ -1814,7 +1993,9 @@ export {
   PerformanceOverview,
   ProfileForm,
   ReportBreakdown,
+  ReportCard,
   ScoreCardRow,
+  SwipeView,
   TeamHeatmap,
   TeamMemberRow,
   TeamPanelFooter,

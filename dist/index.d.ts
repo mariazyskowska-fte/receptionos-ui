@@ -924,4 +924,76 @@ interface ActivityLogProps {
 }
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * SwipeView — horizontal scroll-snap container for mobile-first
+ * layouts. Each child is a full-width "page" that snaps into view.
+ *
+ * Used for the "timeline" metaphor:
+ *   ← past (historia) | present (raporty) | future (upload) →
+ *
+ * Cross-app usage:
+ *  - ConsultFlow: doctor's mobile view (PerformanceOverview ← ReportList → Upload)
+ *  - CallFlow:    potential mobile receptionist view
+ *  - ShiftFlow:   potential mobile doctor schedule view
+ *
+ * The component renders:
+ *  - A dot indicator showing which page is active
+ *  - Optional labels above each dot
+ *  - CSS scroll-snap for native touch swiping
+ */
+interface SwipeViewPage {
+    /** Unique key. */
+    key: string;
+    /** Short label shown in the dot indicator (e.g. "Historia", "Raporty", "Upload"). */
+    label: string;
+    /** Page content. */
+    content: React.ReactNode;
+}
+interface SwipeViewProps {
+    pages: SwipeViewPage[];
+    /** Index of the initially visible page (default: 0). */
+    initialPage?: number;
+    /** Called when the active page changes. */
+    onPageChange?: (key: string, index: number) => void;
+    /** Brand accent for the active dot. */
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    className?: string;
+}
+declare function SwipeView({ pages, initialPage, onPageChange, brand, className, }: SwipeViewProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * ReportCard — compact touch-friendly card for a single consultation
+ * or report in a scrollable list. Optimized for mobile viewports.
+ *
+ * Source user stories:
+ *  - ConsultFlow: US-CO-02 sc.1 — "widzi powiadomienie: 'Raport z
+ *                 konsultacji [data] jest gotowy'" + CTA
+ *  - CallFlow:    US-CF-02 sc.1 — "Twój nowy raport z rozmowy jest gotowy"
+ *
+ * Shows: identifier (initials/name), date, status badge, score (if completed).
+ * Tap opens the full report (ReportBreakdown).
+ */
+type ReportCardStatus = "completed" | "analyzing" | "pending" | "error";
+interface ReportCardProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** Primary label — patient initials, receptionist name, etc. */
+    label: string;
+    /** Date string, e.g. "8 kwi 2026". */
+    date: string;
+    /** Secondary info, e.g. duration "12m". */
+    subtitle?: string;
+    status: ReportCardStatus;
+    /** Overall score (shown only when completed). */
+    score?: number;
+    /** Additional score details shown on larger screens. */
+    scoreDetails?: Array<{
+        label: string;
+        value: number;
+    }>;
+    /** Called when the card is tapped. */
+    onOpen?: () => void;
+    className?: string;
+}
+declare function ReportCard({ brand, label, date, subtitle, status, score, scoreDetails, onOpen, className, }: ReportCardProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
