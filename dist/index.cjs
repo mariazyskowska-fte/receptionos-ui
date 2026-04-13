@@ -47,6 +47,7 @@ __export(index_exports, {
   Input: () => Input,
   MemberDetailView: () => MemberDetailView,
   PageHeading: () => PageHeading,
+  PerformanceOverview: () => PerformanceOverview,
   ProfileForm: () => ProfileForm,
   ReportBreakdown: () => ReportBreakdown,
   ScoreCardRow: () => ScoreCardRow,
@@ -1596,8 +1597,123 @@ function ScoreCardRow({
   }) });
 }
 
-// src/patterns/DashboardLayout.tsx
+// src/patterns/PerformanceOverview.tsx
+var React9 = __toESM(require("react"), 1);
 var import_jsx_runtime20 = require("react/jsx-runtime");
+function barColor3(score) {
+  if (score >= 75) return "bg-ros-success-fg";
+  if (score >= 50) return "bg-ros-warn-fg";
+  return "bg-ros-danger-fg";
+}
+function scoreText3(score) {
+  if (score >= 75) return "text-ros-success-fg";
+  if (score >= 50) return "text-ros-warn-fg";
+  return "text-ros-danger-fg";
+}
+var trendGlyph3 = {
+  up: { glyph: "\u2191", tone: "success" },
+  down: { glyph: "\u2193", tone: "danger" },
+  flat: { glyph: "\u2192", tone: "neutral" }
+};
+function PerformanceOverview({
+  brand = "callflow",
+  title = "Wyniki",
+  periodLabel,
+  overallAvg,
+  prevOverallAvg,
+  areas,
+  totalReports,
+  className
+}) {
+  const weakest = React9.useMemo(() => {
+    if (areas.length === 0) return null;
+    return areas.reduce((min, a) => a.avgScore < min.avgScore ? a : min, areas[0]);
+  }, [areas]);
+  const strongest = React9.useMemo(() => {
+    if (areas.length === 0) return null;
+    return areas.reduce((max, a) => a.avgScore > max.avgScore ? a : max, areas[0]);
+  }, [areas]);
+  const colClass = areas.length <= 3 ? "grid-cols-3" : areas.length <= 4 ? "grid-cols-4" : "grid-cols-3 lg:grid-cols-6";
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    "div",
+    {
+      className: cn(
+        "rounded-card border border-ros-border bg-white flex flex-col",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between px-5 pt-5 pb-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: title }),
+            periodLabel && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-faint", children: periodLabel }),
+            totalReports != null && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Badge, { tone: "neutral", children: [
+              totalReports,
+              " raport\xF3w"
+            ] })
+          ] }),
+          overallAvg != null && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-baseline gap-2", children: [
+            prevOverallAvg != null && prevOverallAvg !== overallAvg && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "text-[14px] text-ros-ink-muted", children: [
+              (prevOverallAvg / 10).toFixed(1),
+              " \u2192"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[24px] leading-none font-medium text-ros-ink", children: (overallAvg / 10).toFixed(1) }),
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: "/10" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("grid gap-2 px-5 pb-4", colClass), children: areas.map((area) => {
+          const isWeakest = weakest && area.name === weakest.name;
+          const isPositive = area.avgScore >= 70;
+          const delta = area.prevAvgScore != null ? ((area.avgScore - area.prevAvgScore) / 10).toFixed(1) : null;
+          const trend = area.trend;
+          return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+            "div",
+            {
+              className: cn(
+                "rounded-stat p-3 flex flex-col gap-1.5",
+                isWeakest ? "bg-ros-danger-bg/50 ring-1 ring-ros-danger-fg/20" : "bg-ros-surface-off"
+              ),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate", children: area.name }),
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-1", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", scoreText3(area.avgScore)), children: isPositive ? "\u2713" : "\u2757" }),
+                    trend && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", `text-ros-${trendGlyph3[trend].tone === "success" ? "success-fg" : trendGlyph3[trend].tone === "danger" ? "danger-fg" : "ink-faint"}`), children: trendGlyph3[trend].glyph })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[20px] leading-none font-bold", scoreText3(area.avgScore)), children: area.avgScore > 0 ? (area.avgScore / 10).toFixed(1) : "\u2014" }),
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "w-full h-1 bg-ros-border rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  "div",
+                  {
+                    className: cn("h-full rounded-pill", barColor3(area.avgScore)),
+                    style: { width: `${Math.min(100, Math.max(0, area.avgScore))}%` }
+                  }
+                ) }),
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[10px] leading-[14px] text-ros-ink-faint", children: delta != null && parseFloat(delta) !== 0 ? `${parseFloat(delta) > 0 ? "+" : ""}${delta} vs. poprz.` : area.dataPoints != null ? `${area.dataPoints} raport\xF3w` : "" })
+              ]
+            },
+            area.name
+          );
+        }) }),
+        (strongest || weakest) && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "border-t border-ros-border px-5 py-3 flex flex-wrap gap-x-6 gap-y-1", children: [
+          strongest && strongest.avgScore >= 70 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-success-fg font-medium", children: "Mocne:" }),
+            " ",
+            areas.filter((a) => a.avgScore >= 70).map((a) => a.name).join(", ")
+          ] }),
+          weakest && weakest.avgScore < 70 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-danger-fg font-medium", children: "Do poprawy:" }),
+            " ",
+            weakest.name,
+            weakest.trend === "down" && " (trend \u2193)"
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+
+// src/patterns/DashboardLayout.tsx
+var import_jsx_runtime21 = require("react/jsx-runtime");
 function DashboardLayout({
   children,
   panel,
@@ -1606,13 +1722,13 @@ function DashboardLayout({
   panelFooter,
   className
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("flex gap-6 items-start", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-4 py-3 border-b border-ros-border flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
-      panelToolbar && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-3 py-2 border-b border-ros-border bg-ros-surface-off", children: panelToolbar }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel }),
-      panelFooter && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: panelFooter })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: cn("flex gap-6 items-start", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "px-4 py-3 border-b border-ros-border flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
+      panelToolbar && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "px-3 py-2 border-b border-ros-border bg-ros-surface-off", children: panelToolbar }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel }),
+      panelFooter && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: panelFooter })
     ] })
   ] });
 }
@@ -1623,8 +1739,8 @@ function TeamPanelToolbar({
   onDeselectAll
 }) {
   const allSelected = selectedCount === totalCount && totalCount > 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       "input",
       {
         type: "checkbox",
@@ -1633,7 +1749,7 @@ function TeamPanelToolbar({
         className: "size-3.5 rounded-sm border-ros-border accent-current cursor-pointer"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: selectedCount > 0 ? `${selectedCount} z ${totalCount}` : `Zaznacz wszystko` })
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: selectedCount > 0 ? `${selectedCount} z ${totalCount}` : `Zaznacz wszystko` })
   ] }) });
 }
 function TeamPanelFooter({
@@ -1644,7 +1760,7 @@ function TeamPanelFooter({
   disabled
 }) {
   if (selectedCount === 0) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
     Button,
     {
       brand,
@@ -1662,8 +1778,8 @@ function TeamPanelFooter({
 }
 
 // src/patterns/ActivityLog.tsx
-var React9 = __toESM(require("react"), 1);
-var import_jsx_runtime21 = require("react/jsx-runtime");
+var React10 = __toESM(require("react"), 1);
+var import_jsx_runtime22 = require("react/jsx-runtime");
 var typeConfig = {
   report_sent: { icon: "\u{1F4C4}", tone: "success" },
   report_viewed: { icon: "\u{1F441}", tone: "success" },
@@ -1681,13 +1797,13 @@ function ActivityLog({
   maxVisible = 10,
   className
 }) {
-  const [expanded, setExpanded] = React9.useState(false);
+  const [expanded, setExpanded] = React10.useState(false);
   const visible = maxVisible > 0 && !expanded ? entries.slice(0, maxVisible) : entries;
   const hasMore = maxVisible > 0 && entries.length > maxVisible;
   if (entries.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: cn("rounded-card border border-ros-border bg-white p-4", className), children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] text-ros-ink-muted text-center py-4", children: "Brak aktywno\u015Bci" }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: cn("rounded-card border border-ros-border bg-white p-4", className), children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[12px] text-ros-ink-muted text-center py-4", children: "Brak aktywno\u015Bci" }) });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
     "div",
     {
       className: cn(
@@ -1695,11 +1811,11 @@ function ActivityLog({
         className
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Historia" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-col", children: visible.map((entry, i) => {
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "px-4 py-3 border-b border-ros-border", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[12px] leading-[16px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: "Historia" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "flex flex-col", children: visible.map((entry, i) => {
           const cfg = typeConfig[entry.type];
           const isLast = i === visible.length - 1;
-          return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+          return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
             "div",
             {
               className: cn(
@@ -1707,20 +1823,20 @@ function ActivityLog({
                 !isLast && "border-b border-ros-border"
               ),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-col items-center pt-0.5 flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-[12px] leading-none", children: entry.iconLabel ?? cfg.icon }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex-1 min-w-0", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-start justify-between gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[13px] leading-[18px] text-ros-ink", children: entry.text }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap", children: entry.timestamp })
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "flex flex-col items-center pt-0.5 flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-[12px] leading-none", children: entry.iconLabel ?? cfg.icon }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex-1 min-w-0", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-start justify-between gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[13px] leading-[18px] text-ros-ink", children: entry.text }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap", children: entry.timestamp })
                   ] }),
-                  entry.detail && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted mt-0.5", children: entry.detail })
+                  entry.detail && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink-muted mt-0.5", children: entry.detail })
                 ] })
               ]
             },
             i
           );
         }) }),
-        hasMore && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+        hasMore && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "button",
           {
             type: "button",
@@ -1752,6 +1868,7 @@ function ActivityLog({
   Input,
   MemberDetailView,
   PageHeading,
+  PerformanceOverview,
   ProfileForm,
   ReportBreakdown,
   ScoreCardRow,

@@ -72,6 +72,12 @@ export {
   type ScoreCard,
 } from "./ScoreCardRow";
 export {
+  PerformanceOverview,
+  type PerformanceOverviewProps,
+  type OverviewArea,
+  type AreaTrend,
+} from "./PerformanceOverview";
+export {
   DashboardLayout,
   TeamPanelToolbar,
   TeamPanelFooter,

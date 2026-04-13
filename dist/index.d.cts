@@ -772,6 +772,72 @@ interface ScoreCardRowProps {
 declare function ScoreCardRow({ cards, displayScale, columns, className, }: ScoreCardRowProps): react_jsx_runtime.JSX.Element;
 
 /**
+ * PerformanceOverview — aggregated area scores for a team member
+ * across multiple reports/consultations over a time period.
+ *
+ * Contrast with ReportBreakdown:
+ *  - ReportBreakdown = ONE report, exact scores, transcript quotes,
+ *    "co poprawić na następny raz"
+ *  - PerformanceOverview = AGGREGATE over period, trend per area,
+ *    "jak się rozwijasz w czasie"
+ *
+ * Source user stories:
+ *  - ConsultFlow: US-CO-05 sc.3 — "pełna historia trendów i podsumowania
+ *                 raportów z ostatnich 3 miesięcy"
+ *  - ConsultFlow: US-CO-03 sc.1 — trend z adnotacjami
+ *  - CallFlow:    US-CF-04 sc.1 — manager widzi "aktualny Empathy Score,
+ *                 trend ↑/↓ i status ✓/❗" per recepcjonistka
+ *
+ * Visual pattern: same horizontal card grid as ReportBreakdown, but
+ * each card shows average + trend arrow + report count instead of
+ * exact score + transcript quote.
+ *
+ * Layout:
+ *   ┌─────────────────────────────────────────────────────────┐
+ *   │ Wyniki — ostatnie 3 miesiące          Średnia: 7.4     │
+ *   ├─────────────────────────────────────────────────────────┤
+ *   │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
+ *   │ │Komplet.  │ │ Wartość  │ │ Obiekcje │ │ CTA      │   │
+ *   │ │ 8.2  ✓ ↑ │ │ 7.1  ✓ → │ │ 4.8  ❗ ↓│ │ 6.9  ✓ ↑ │   │
+ *   │ │████████░ │ │███████░░ │ │████░░░░░ │ │██████░░░ │   │
+ *   │ │12 raportów│ │śr. +0.4  │ │śr. -1.2  │ │8 raportów│   │
+ *   │ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
+ *   ├─────────────────────────────────────────────────────────┤
+ *   │ Mocne: Kompletność, CTA                                │
+ *   │ Do poprawy: Obiekcje (najsłabszy, trend ↓)            │
+ *   └─────────────────────────────────────────────────────────┘
+ */
+type AreaTrend = "up" | "down" | "flat";
+interface OverviewArea {
+    name: string;
+    /** Average score 0–100 over the period. */
+    avgScore: number;
+    /** Average score in previous period (for delta). */
+    prevAvgScore?: number;
+    /** Trend direction. */
+    trend?: AreaTrend;
+    /** Number of data points (reports/consultations) that contributed. */
+    dataPoints?: number;
+}
+interface PerformanceOverviewProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** Header title, e.g. "Wyniki — ostatnie 3 miesiące". */
+    title?: string;
+    /** Period label shown in subtitle, e.g. "sty–mar 2026". */
+    periodLabel?: string;
+    /** Overall average across all areas. */
+    overallAvg?: number;
+    /** Previous period overall average. */
+    prevOverallAvg?: number;
+    /** Aggregated area data. */
+    areas: OverviewArea[];
+    /** Total reports/consultations in this period. */
+    totalReports?: number;
+    className?: string;
+}
+declare function PerformanceOverview({ brand, title, periodLabel, overallAvg, prevOverallAvg, areas, totalReports, className, }: PerformanceOverviewProps): react_jsx_runtime.JSX.Element;
+
+/**
  * DashboardLayout — two-column manager dashboard.
  *
  *   ┌──────────────────────────────┬──────────────────┐
@@ -858,4 +924,4 @@ interface ActivityLogProps {
 }
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, PageHeading, type PageHeadingProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
