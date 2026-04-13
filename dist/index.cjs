@@ -54,6 +54,7 @@ __export(index_exports, {
   ReportCard: () => ReportCard,
   ReportSection: () => ReportSection,
   ScoreCardRow: () => ScoreCardRow,
+  SetupFlow: () => SetupFlow,
   SwipeView: () => SwipeView,
   TeamHeatmap: () => TeamHeatmap,
   TeamMemberRow: () => TeamMemberRow,
@@ -2324,6 +2325,99 @@ function TranscriptDrawer({
     }
   );
 }
+
+// src/patterns/SetupFlow.tsx
+var React14 = __toESM(require("react"), 1);
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var brandBg6 = {
+  callflow: "bg-brand-callflow",
+  consultflow: "bg-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow"
+};
+function SetupFlow({
+  steps,
+  onComplete,
+  completeLabel = "Gotowe",
+  onCancel,
+  brand = "callflow",
+  className
+}) {
+  const [activeIndex, setActiveIndex] = React14.useState(0);
+  const total = steps.length;
+  const current = steps[activeIndex];
+  const isLast = activeIndex >= total - 1;
+  const isFirst = activeIndex === 0;
+  function handleNext() {
+    if (isLast) {
+      onComplete();
+    } else {
+      setActiveIndex((i) => Math.min(i + 1, total - 1));
+    }
+  }
+  function handleBack() {
+    setActiveIndex((i) => Math.max(i - 1, 0));
+  }
+  function handleSkip() {
+    if (current.optional && !isLast) {
+      setActiveIndex((i) => Math.min(i + 1, total - 1));
+    }
+  }
+  const progress = (activeIndex + 1) / total * 100;
+  const canProceed = current.isValid !== false;
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: cn("flex flex-col gap-4", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-3", children: [
+      onCancel && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        "button",
+        {
+          type: "button",
+          onClick: onCancel,
+          className: "text-[13px] text-ros-ink-muted hover:text-ros-ink bg-transparent border-none cursor-pointer p-0 flex-shrink-0",
+          children: "\u2715"
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "flex-1 h-1.5 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        "div",
+        {
+          className: cn("h-full rounded-pill transition-all duration-300", brandBg6[brand]),
+          style: { width: `${progress}%` }
+        }
+      ) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "text-[12px] text-ros-ink-faint flex-shrink-0", children: [
+        activeIndex + 1,
+        "/",
+        total
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: current.title }),
+        current.subtitle && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[13px] text-ros-ink-muted mt-0.5", children: current.subtitle })
+      ] }),
+      current.optional && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        "button",
+        {
+          type: "button",
+          onClick: handleSkip,
+          className: "text-[13px] text-ros-ink-muted hover:text-ros-ink bg-transparent border-none cursor-pointer p-0",
+          children: "Pomi\u0144 \u2192"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "rounded-card border border-ros-border bg-white p-5", children: current.content }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center justify-between", children: [
+      !isFirst ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Button, { variant: "ghost", onClick: handleBack, children: "\u2190 Wstecz" }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", {}),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        Button,
+        {
+          brand,
+          onClick: handleNext,
+          disabled: !canProceed,
+          children: isLast ? completeLabel : "Dalej \u2192"
+        }
+      )
+    ] })
+  ] });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ActivityLog,
@@ -2350,6 +2444,7 @@ function TranscriptDrawer({
   ReportCard,
   ReportSection,
   ScoreCardRow,
+  SetupFlow,
   SwipeView,
   TeamHeatmap,
   TeamMemberRow,

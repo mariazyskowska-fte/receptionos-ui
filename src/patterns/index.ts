@@ -114,3 +114,8 @@ export {
   TranscriptDrawer,
   type TranscriptDrawerProps,
 } from "./TranscriptDrawer";
+export {
+  SetupFlow,
+  type SetupFlowProps,
+  type SetupStep,
+} from "./SetupFlow";

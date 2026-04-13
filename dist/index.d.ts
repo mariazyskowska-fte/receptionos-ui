@@ -1078,4 +1078,46 @@ interface TranscriptDrawerProps {
 }
 declare function TranscriptDrawer({ content, onCopy, label, className, }: TranscriptDrawerProps): react_jsx_runtime.JSX.Element | null;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * SetupFlow — step-by-step configuration wizard.
+ *
+ * Used for multi-step setup processes where the user must complete
+ * or review configuration before proceeding to an action.
+ *
+ * Cross-app usage:
+ *  - ShiftFlow:  "Nowy grafik" flow (klinika → zespół → import → generuj)
+ *  - CallFlow:   potential "Nowy raport" flow (klinika → recepcjonistka → upload)
+ *  - ConsultFlow: potential onboarding flow
+ *
+ * Each step is a full-width card with title and content. Navigation
+ * is via "Dalej" / "Wstecz" buttons — no swiping (intentional, to
+ * prevent accidental skipping of configuration).
+ *
+ * Steps can be marked as optional (skippable) or required.
+ */
+interface SetupStep {
+    key: string;
+    title: string;
+    /** Short description below the title. */
+    subtitle?: string;
+    /** Whether this step can be skipped. */
+    optional?: boolean;
+    /** Content of the step (form fields, etc.). */
+    content: React.ReactNode;
+    /** Validation — return true if step is complete and user can proceed. */
+    isValid?: boolean;
+}
+interface SetupFlowProps {
+    steps: SetupStep[];
+    /** Called when user completes all steps and clicks the final action. */
+    onComplete: () => void;
+    /** Label for the final action button (e.g. "Generuj grafik"). */
+    completeLabel?: string;
+    /** Called when user cancels/exits the flow. */
+    onCancel?: () => void;
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    className?: string;
+}
+declare function SetupFlow({ steps, onComplete, completeLabel, onCancel, brand, className, }: SetupFlowProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
