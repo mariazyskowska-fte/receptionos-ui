@@ -1977,49 +1977,36 @@ function ReportCard({
 import { jsx as jsx25, jsxs as jsxs22 } from "react/jsx-runtime";
 var variantStyles = {
   scores: {
-    border: "border-ros-border",
     bg: "bg-white",
     accent: "bg-ros-ink-faint",
     titleColor: "text-ros-ink"
   },
   tips: {
-    border: "border-[#fed7aa]",
     bg: "bg-[#fffbf5]",
     accent: "bg-ros-warn-fg",
     titleColor: "text-[#c2410c]"
   },
   strength: {
-    border: "border-[#bbf7d0]",
     bg: "bg-[#f7fef9]",
     accent: "bg-ros-success-fg",
     titleColor: "text-ros-success-fg"
   },
   improve: {
-    border: "border-[#fed7aa]",
     bg: "bg-[#fffaf5]",
     accent: "bg-[#ea580c]",
     titleColor: "text-[#ea580c]"
   },
   recommend: {
-    border: "border-[#c4b5fd]",
     bg: "bg-[#faf8ff]",
     accent: "bg-[#7c3aed]",
     titleColor: "text-[#7c3aed]"
   },
   progress: {
-    border: "border-[#c4b5fd]",
     bg: "bg-[#fdf8ff]",
     accent: "bg-[#9333ea]",
     titleColor: "text-[#9333ea]"
   },
-  transcript: {
-    border: "border-ros-border",
-    bg: "bg-ros-surface-off",
-    accent: "bg-ros-ink-muted",
-    titleColor: "text-ros-ink-medium"
-  },
   neutral: {
-    border: "border-ros-border",
     bg: "bg-white",
     accent: "bg-ros-ink-faint",
     titleColor: "text-ros-ink"
@@ -2034,28 +2021,25 @@ function ReportSection({
   className
 }) {
   const v = variantStyles[variant];
-  return /* @__PURE__ */ jsx25(
+  return /* @__PURE__ */ jsxs22(
     "div",
     {
       className: cn(
-        "rounded-card border overflow-hidden flex flex-col",
-        v.border,
+        "rounded-card border border-ros-border overflow-hidden flex flex-col",
         v.bg,
         className
       ),
-      children: /* @__PURE__ */ jsxs22("div", { className: "flex", children: [
-        /* @__PURE__ */ jsx25("div", { className: cn("w-1 flex-shrink-0", v.accent) }),
-        /* @__PURE__ */ jsxs22("div", { className: "flex-1 flex flex-col", children: [
-          /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between px-4 pt-4 pb-2", children: [
-            /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
-              icon && /* @__PURE__ */ jsx25("span", { className: cn("flex-shrink-0", v.titleColor), children: icon }),
-              /* @__PURE__ */ jsx25("p", { className: cn("text-[13px] leading-[18px] font-semibold", v.titleColor), children: title })
-            ] }),
-            headerRight
+      children: [
+        /* @__PURE__ */ jsx25("div", { className: cn("h-[3px] w-full", v.accent) }),
+        /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between px-5 pt-4 pb-2", children: [
+          /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
+            icon && /* @__PURE__ */ jsx25("span", { className: cn("flex-shrink-0", v.titleColor), children: icon }),
+            /* @__PURE__ */ jsx25("p", { className: cn("text-[14px] leading-[20px] font-semibold", v.titleColor), children: title })
           ] }),
-          /* @__PURE__ */ jsx25("div", { className: "px-4 pb-4", children })
-        ] })
-      ] })
+          headerRight
+        ] }),
+        /* @__PURE__ */ jsx25("div", { className: "px-5 pb-5", children })
+      ]
     }
   );
 }
@@ -2063,7 +2047,7 @@ function ReportSection({
 // src/patterns/CardStack.tsx
 import * as React12 from "react";
 import { jsx as jsx26, jsxs as jsxs23 } from "react/jsx-runtime";
-var brandDot2 = {
+var brandBg5 = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
   shiftflow: "bg-brand-shiftflow"
@@ -2079,85 +2063,103 @@ function CardStack({
   const [activeIndex, setActiveIndex] = React12.useState(0);
   const [dragX, setDragX] = React12.useState(0);
   const [isDragging, setIsDragging] = React12.useState(false);
-  const [dismissing, setDismissing] = React12.useState(false);
+  const [animating, setAnimating] = React12.useState(false);
   const startX = React12.useRef(0);
   const containerRef = React12.useRef(null);
   function handleStart(clientX) {
-    if (dismissing || activeIndex >= total - 1) return;
+    if (animating) return;
     startX.current = clientX;
     setIsDragging(true);
   }
   function handleMove(clientX) {
-    if (!isDragging || dismissing) return;
-    setDragX(Math.min(0, clientX - startX.current));
+    if (!isDragging || animating) return;
+    const delta = clientX - startX.current;
+    if (activeIndex === 0 && delta > 0) {
+      setDragX(delta * 0.3);
+    } else if (activeIndex >= total - 1 && delta < 0) {
+      setDragX(delta * 0.3);
+    } else {
+      setDragX(delta);
+    }
+  }
+  function goTo(index) {
+    const clamped = Math.max(0, Math.min(index, total - 1));
+    if (clamped === activeIndex) {
+      setDragX(0);
+      return;
+    }
+    setAnimating(true);
+    const width = containerRef.current?.offsetWidth || 300;
+    setDragX(clamped > activeIndex ? -width : width);
+    setTimeout(() => {
+      setActiveIndex(clamped);
+      setDragX(0);
+      setAnimating(false);
+      onProgress?.(clamped, total);
+    }, 200);
   }
   function handleEnd() {
-    if (!isDragging || dismissing) return;
+    if (!isDragging || animating) return;
     setIsDragging(false);
     const width = containerRef.current?.offsetWidth || 300;
-    if (Math.abs(dragX) > width * 0.3 && activeIndex < total - 1) {
-      setDismissing(true);
-      setDragX(-width * 1.2);
-      setTimeout(() => {
-        const next = activeIndex + 1;
-        setActiveIndex(next);
-        setDragX(0);
-        setDismissing(false);
-        onProgress?.(next, total);
-      }, 200);
+    const threshold = width * 0.25;
+    if (dragX < -threshold && activeIndex < total - 1) {
+      goTo(activeIndex + 1);
+    } else if (dragX > threshold && activeIndex > 0) {
+      goTo(activeIndex - 1);
     } else {
       setDragX(0);
     }
   }
-  return /* @__PURE__ */ jsxs23("div", { className: cn("flex flex-col gap-3", className), children: [
-    /* @__PURE__ */ jsx26("div", { ref: containerRef, className: "relative w-full overflow-hidden", style: { minHeight: 180 }, children: cards.map((card, i) => {
-      if (i < activeIndex) return null;
-      const offset = i - activeIndex;
-      if (offset > 3) return null;
-      const isTop = offset === 0;
-      const isLast = activeIndex >= total - 1;
-      const yShift = offset * 8;
-      return /* @__PURE__ */ jsx26(
+  const progress = (activeIndex + 1) / total * 100;
+  return /* @__PURE__ */ jsxs23("div", { className: cn("flex flex-col gap-4", className), children: [
+    total > 1 && /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-3 px-1", children: [
+      /* @__PURE__ */ jsx26("div", { className: "flex-1 h-1 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ jsx26(
         "div",
         {
-          className: cn(
-            "w-full",
-            isTop ? cn("relative z-10", isDragging ? "" : "transition-transform duration-200") : "absolute inset-x-0 top-0 transition-all duration-300"
-          ),
-          style: {
-            transform: isTop ? `translateX(${dragX}px) rotate(${dragX * 0.015}deg)` : `translateY(${yShift}px)`,
-            opacity: isTop ? 1 : 1 - offset * 0.15,
-            zIndex: total - offset
-          },
-          onTouchStart: isTop && !isLast ? (e) => handleStart(e.touches[0].clientX) : void 0,
-          onTouchMove: isTop ? (e) => handleMove(e.touches[0].clientX) : void 0,
-          onTouchEnd: isTop ? handleEnd : void 0,
-          onMouseDown: isTop && !isLast ? (e) => handleStart(e.clientX) : void 0,
-          onMouseMove: isTop && isDragging ? (e) => handleMove(e.clientX) : void 0,
-          onMouseUp: isTop ? handleEnd : void 0,
-          onMouseLeave: isTop && isDragging ? handleEnd : void 0,
-          children: card
-        },
-        i
-      );
-    }) }),
-    total > 1 && /* @__PURE__ */ jsxs23("div", { className: "flex items-center justify-center gap-3", children: [
-      /* @__PURE__ */ jsx26("div", { className: "flex items-center gap-1.5", children: cards.map((_, i) => /* @__PURE__ */ jsx26(
-        "div",
-        {
-          className: cn(
-            "h-1.5 rounded-pill transition-all duration-200",
-            i < activeIndex ? cn("w-4", brandDot2[brand], "opacity-30") : i === activeIndex ? cn("w-6", brandDot2[brand]) : "w-1.5 bg-ros-ink-faint/30"
-          )
-        },
-        i
-      )) }),
-      /* @__PURE__ */ jsxs23("span", { className: "text-[11px] text-ros-ink-faint", children: [
-        Math.min(activeIndex + 1, total),
+          className: cn("h-full rounded-pill transition-all duration-200", brandBg5[brand]),
+          style: { width: `${progress}%` }
+        }
+      ) }),
+      /* @__PURE__ */ jsxs23("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0", children: [
+        activeIndex + 1,
         "/",
         total
       ] })
-    ] })
+    ] }),
+    /* @__PURE__ */ jsx26(
+      "div",
+      {
+        ref: containerRef,
+        className: "relative w-full overflow-hidden",
+        onTouchStart: (e) => handleStart(e.touches[0].clientX),
+        onTouchMove: (e) => handleMove(e.touches[0].clientX),
+        onTouchEnd: handleEnd,
+        onMouseDown: (e) => handleStart(e.clientX),
+        onMouseMove: (e) => {
+          if (isDragging) handleMove(e.clientX);
+        },
+        onMouseUp: handleEnd,
+        onMouseLeave: () => {
+          if (isDragging) handleEnd();
+        },
+        children: /* @__PURE__ */ jsx26(
+          "div",
+          {
+            className: cn(
+              "w-full",
+              isDragging || animating ? "" : "transition-transform duration-200",
+              animating && "transition-transform duration-200"
+            ),
+            style: {
+              transform: `translateX(${dragX}px)`
+            },
+            children: cards[activeIndex]
+          }
+        )
+      }
+    ),
+    activeIndex === 0 && total > 1 && !isDragging && /* @__PURE__ */ jsx26("p", { className: "text-center text-[11px] text-ros-ink-faint animate-pulse", children: "\u2190 przesu\u0144, aby zobaczy\u0107 wi\u0119cej" })
   ] });
 }
 

@@ -997,37 +997,27 @@ interface ReportCardProps {
 declare function ReportCard({ brand, label, date, subtitle, status, score, scoreDetails, onOpen, className, }: ReportCardProps): react_jsx_runtime.JSX.Element;
 
 /**
- * ReportSection — unified card for report detail sections.
- * Each section has the same shape as PerformanceOverview (rounded-card,
- * header row, content) but with a subtle color accent that signals
- * the section's purpose.
+ * ReportSection — single full-width card for one section of a report.
+ * Designed to be the only thing visible on screen at a given moment
+ * (inside CardStack quiz-flow).
+ *
+ * All variants have identical dimensions. Only the top accent line
+ * (3px) and subtle background tint differ between variants.
  *
  * Variants:
- *  - scores    → neutral white (default, for ReportBreakdown)
- *  - tips      → warm orange tint (quick tips, "na następny raz")
- *  - strength  → green tint (mocne strony)
- *  - improve   → orange tint (do poprawy)
- *  - recommend → brand tint (rekomendacje)
- *  - progress  → purple tint (postęp vs. poprzednie)
- *  - neutral   → plain white (generic)
- *
- * Note: transcript is NOT a variant here — use TranscriptDrawer
- * as a separate bottom sheet component instead.
- *
- * All variants share:
- *  - Same rounded-card border radius (24px)
- *  - Same padding
- *  - Same header typography (13px semibold + optional icon)
- *  - Left color bar (4px) for variant identification
+ *  - scores    → neutral (white bg, gray accent)
+ *  - tips      → warm (cream bg, orange accent)
+ *  - strength  → positive (mint bg, green accent)
+ *  - improve   → attention (peach bg, orange accent)
+ *  - recommend → brand (lavender bg, purple accent)
+ *  - progress  → insight (light purple bg, purple accent)
+ *  - neutral   → plain white
  */
-type ReportSectionVariant = "scores" | "tips" | "strength" | "improve" | "recommend" | "progress" | "transcript" | "neutral";
+type ReportSectionVariant = "scores" | "tips" | "strength" | "improve" | "recommend" | "progress" | "neutral";
 interface ReportSectionProps {
     variant?: ReportSectionVariant;
-    /** Section title shown in header. */
     title: string;
-    /** Icon rendered before the title (16px recommended). */
     icon?: React.ReactNode;
-    /** Optional right-side header content (badge, button). */
     headerRight?: React.ReactNode;
     children: React.ReactNode;
     className?: string;
@@ -1035,21 +1025,29 @@ interface ReportSectionProps {
 declare function ReportSection({ variant, title, icon, headerRight, children, className, }: ReportSectionProps): react_jsx_runtime.JSX.Element;
 
 /**
- * CardStack — swipe-to-dismiss card stack for report details.
+ * CardStack — quiz-flow card viewer. One card visible at a time,
+ * full width, clean transition. No peeking, no stacking depth.
  *
- * Cards have fixed width (100% of container) and fixed shape.
- * No scaling — all cards are the same size. Cards beneath the top
- * one peek with a small Y offset showing their accent color bar.
+ * Interaction:
+ *  - Swipe left → next card (animate out left, next fades in)
+ *  - Swipe right → previous card (go back)
+ *  - Progress bar at top shows position
  *
- * Swipe left → dismiss top card, reveal next.
- * Progress dots track reading progress.
+ * Designed for minimal cognitive load — the user focuses on one
+ * piece of information at a time.
  *
- * Transcript is NOT part of this stack — use TranscriptDrawer
- * separately as a bottom sheet.
+ * Usage with TranscriptDrawer:
+ *   <div>
+ *     <CardStack brand="consultflow">
+ *       <ReportSection variant="scores" title="Wyniki">...</ReportSection>
+ *       <ReportSection variant="tips" title="Wskazówki">...</ReportSection>
+ *       <ReportSection variant="strength" title="Mocne strony">...</ReportSection>
+ *     </CardStack>
+ *     <TranscriptDrawer content={transcript} />
+ *   </div>
  */
 interface CardStackProps {
     children: React.ReactNode;
-    /** Called when active card changes. */
     onProgress?: (currentIndex: number, total: number) => void;
     brand?: "callflow" | "consultflow" | "shiftflow";
     className?: string;
