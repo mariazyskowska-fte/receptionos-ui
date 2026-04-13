@@ -59,6 +59,7 @@ __export(index_exports, {
   TeamMemberRow: () => TeamMemberRow,
   TeamPanelFooter: () => TeamPanelFooter,
   TeamPanelToolbar: () => TeamPanelToolbar,
+  TranscriptDrawer: () => TranscriptDrawer,
   TrendChart: () => TrendChart,
   tokens: () => tokens_exports
 });
@@ -2141,35 +2142,21 @@ function CardStack({
   const [isDragging, setIsDragging] = React12.useState(false);
   const [dismissing, setDismissing] = React12.useState(false);
   const startX = React12.useRef(0);
-  const cardRef = React12.useRef(null);
-  function handleTouchStart(e) {
-    if (dismissing) return;
-    startX.current = e.touches[0].clientX;
-    setIsDragging(true);
-  }
-  function handleMouseDown(e) {
-    if (dismissing) return;
-    startX.current = e.clientX;
+  const containerRef = React12.useRef(null);
+  function handleStart(clientX) {
+    if (dismissing || activeIndex >= total - 1) return;
+    startX.current = clientX;
     setIsDragging(true);
   }
   function handleMove(clientX) {
     if (!isDragging || dismissing) return;
-    const delta = clientX - startX.current;
-    setDragX(Math.min(0, delta));
-  }
-  function handleTouchMove(e) {
-    handleMove(e.touches[0].clientX);
-  }
-  function handleMouseMove(e) {
-    if (!isDragging) return;
-    handleMove(e.clientX);
+    setDragX(Math.min(0, clientX - startX.current));
   }
   function handleEnd() {
     if (!isDragging || dismissing) return;
     setIsDragging(false);
-    const width = cardRef.current?.offsetWidth || 300;
-    const threshold = width * 0.3;
-    if (Math.abs(dragX) > threshold && activeIndex < total - 1) {
+    const width = containerRef.current?.offsetWidth || 300;
+    if (Math.abs(dragX) > width * 0.3 && activeIndex < total - 1) {
       setDismissing(true);
       setDragX(-width * 1.2);
       setTimeout(() => {
@@ -2178,73 +2165,162 @@ function CardStack({
         setDragX(0);
         setDismissing(false);
         onProgress?.(next, total);
-      }, 250);
+      }, 200);
     } else {
       setDragX(0);
     }
   }
-  const isLast = activeIndex >= total - 1;
-  const progress = Math.min(activeIndex + 1, total);
   return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: cn("flex flex-col gap-3", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-      "div",
-      {
-        className: "relative",
-        style: { minHeight: 200 },
-        children: cards.map((card, i) => {
-          if (i < activeIndex) return null;
-          const offset = i - activeIndex;
-          if (offset > 3) return null;
-          const isTop = offset === 0;
-          const yShift = offset * 12;
-          const scaleVal = 1 - offset * 0.04;
-          const opacity = offset === 0 ? 1 : offset === 1 ? 0.7 : 0.4;
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-            "div",
-            {
-              ref: isTop ? cardRef : void 0,
-              className: cn(
-                "transition-transform",
-                isTop ? isDragging ? "duration-0" : "duration-250" : "duration-300",
-                isTop ? "relative z-10" : "absolute inset-x-0 top-0"
-              ),
-              style: {
-                transform: isTop ? `translateX(${dragX}px) rotate(${dragX * 0.02}deg)` : `translateY(${yShift}px) scale(${scaleVal})`,
-                opacity,
-                zIndex: total - offset
-              },
-              onTouchStart: isTop && !isLast ? handleTouchStart : void 0,
-              onTouchMove: isTop ? handleTouchMove : void 0,
-              onTouchEnd: isTop ? handleEnd : void 0,
-              onMouseDown: isTop && !isLast ? handleMouseDown : void 0,
-              onMouseMove: isTop ? handleMouseMove : void 0,
-              onMouseUp: isTop ? handleEnd : void 0,
-              onMouseLeave: isTop && isDragging ? handleEnd : void 0,
-              children: card
-            },
-            i
-          );
-        })
-      }
-    ),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { ref: containerRef, className: "relative w-full overflow-hidden", style: { minHeight: 180 }, children: cards.map((card, i) => {
+      if (i < activeIndex) return null;
+      const offset = i - activeIndex;
+      if (offset > 3) return null;
+      const isTop = offset === 0;
+      const isLast = activeIndex >= total - 1;
+      const yShift = offset * 8;
+      return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        "div",
+        {
+          className: cn(
+            "w-full",
+            isTop ? cn("relative z-10", isDragging ? "" : "transition-transform duration-200") : "absolute inset-x-0 top-0 transition-all duration-300"
+          ),
+          style: {
+            transform: isTop ? `translateX(${dragX}px) rotate(${dragX * 0.015}deg)` : `translateY(${yShift}px)`,
+            opacity: isTop ? 1 : 1 - offset * 0.15,
+            zIndex: total - offset
+          },
+          onTouchStart: isTop && !isLast ? (e) => handleStart(e.touches[0].clientX) : void 0,
+          onTouchMove: isTop ? (e) => handleMove(e.touches[0].clientX) : void 0,
+          onTouchEnd: isTop ? handleEnd : void 0,
+          onMouseDown: isTop && !isLast ? (e) => handleStart(e.clientX) : void 0,
+          onMouseMove: isTop && isDragging ? (e) => handleMove(e.clientX) : void 0,
+          onMouseUp: isTop ? handleEnd : void 0,
+          onMouseLeave: isTop && isDragging ? handleEnd : void 0,
+          children: card
+        },
+        i
+      );
+    }) }),
     total > 1 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-center gap-3", children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex items-center gap-1.5", children: cards.map((_, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         "div",
         {
           className: cn(
-            "rounded-pill transition-all duration-200",
-            i < activeIndex ? cn("w-4 h-1.5", brandDot2[brand], "opacity-40") : i === activeIndex ? cn("w-6 h-1.5", brandDot2[brand]) : "w-1.5 h-1.5 bg-ros-ink-faint/30"
+            "h-1.5 rounded-pill transition-all duration-200",
+            i < activeIndex ? cn("w-4", brandDot2[brand], "opacity-30") : i === activeIndex ? cn("w-6", brandDot2[brand]) : "w-1.5 bg-ros-ink-faint/30"
           )
         },
         i
       )) }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "text-[11px] text-ros-ink-faint", children: [
-        progress,
+        Math.min(activeIndex + 1, total),
         "/",
         total
       ] })
     ] })
   ] });
+}
+
+// src/patterns/TranscriptDrawer.tsx
+var React13 = __toESM(require("react"), 1);
+var import_jsx_runtime27 = require("react/jsx-runtime");
+function TranscriptDrawer({
+  content,
+  onCopy,
+  label = "Transkrypcja",
+  className
+}) {
+  const [expanded, setExpanded] = React13.useState(false);
+  const [dragY, setDragY] = React13.useState(0);
+  const [isDragging, setIsDragging] = React13.useState(false);
+  const startY = React13.useRef(0);
+  if (!content) return null;
+  function handleStart(clientY) {
+    startY.current = clientY;
+    setIsDragging(true);
+  }
+  function handleMove(clientY) {
+    if (!isDragging) return;
+    const delta = clientY - startY.current;
+    if (expanded) {
+      setDragY(Math.max(0, delta));
+    } else {
+      setDragY(Math.min(0, delta));
+    }
+  }
+  function handleEnd() {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const threshold = 60;
+    if (expanded && dragY > threshold) {
+      setExpanded(false);
+    } else if (!expanded && Math.abs(dragY) > threshold) {
+      setExpanded(true);
+    }
+    setDragY(0);
+  }
+  function handleCopy() {
+    navigator.clipboard.writeText(content).catch(() => {
+    });
+    onCopy?.();
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+    "div",
+    {
+      className: cn(
+        "fixed inset-x-0 bottom-0 z-40 flex flex-col bg-white border-t border-ros-border rounded-t-card shadow-card transition-transform",
+        isDragging ? "duration-0" : "duration-300",
+        className
+      ),
+      style: {
+        transform: expanded ? `translateY(${Math.max(0, dragY)}px)` : `translateY(calc(100% - 48px + ${Math.min(0, dragY)}px))`,
+        maxHeight: "70vh"
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+          "div",
+          {
+            className: "flex items-center justify-between px-4 py-3 cursor-pointer select-none flex-shrink-0",
+            onClick: () => {
+              if (!isDragging) setExpanded(!expanded);
+            },
+            onTouchStart: (e) => handleStart(e.touches[0].clientY),
+            onTouchMove: (e) => handleMove(e.touches[0].clientY),
+            onTouchEnd: handleEnd,
+            onMouseDown: (e) => handleStart(e.clientY),
+            onMouseMove: (e) => {
+              if (isDragging) handleMove(e.clientY);
+            },
+            onMouseUp: handleEnd,
+            onMouseLeave: () => {
+              if (isDragging) handleEnd();
+            },
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "w-8 h-1 rounded-pill bg-ros-ink-faint/40 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-[13px] font-medium text-ros-ink-medium mt-1", children: label }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-[11px] text-ros-ink-faint mt-1", children: expanded ? "\u25BC" : "\u25B2" })
+              ] }),
+              expanded && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+                Button,
+                {
+                  variant: "ghost",
+                  className: "text-[11px] h-7 px-2 mt-1",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    handleCopy();
+                  },
+                  children: "Kopiuj"
+                }
+              )
+            ]
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "flex-1 overflow-y-auto px-4 pb-6", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-[13px] leading-[20px] text-ros-ink-medium whitespace-pre-wrap", children: content }) })
+      ]
+    }
+  );
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -2277,6 +2353,7 @@ function CardStack({
   TeamMemberRow,
   TeamPanelFooter,
   TeamPanelToolbar,
+  TranscriptDrawer,
   TrendChart,
   tokens
 });

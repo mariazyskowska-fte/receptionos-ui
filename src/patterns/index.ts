@@ -110,3 +110,7 @@ export {
   CardStack,
   type CardStackProps,
 } from "./CardStack";
+export {
+  TranscriptDrawer,
+  type TranscriptDrawerProps,
+} from "./TranscriptDrawer";

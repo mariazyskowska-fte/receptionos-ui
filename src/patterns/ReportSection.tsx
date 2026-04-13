@@ -14,15 +14,16 @@ import { cn } from "../utils/cn";
  *  - improve   → orange tint (do poprawy)
  *  - recommend → brand tint (rekomendacje)
  *  - progress  → purple tint (postęp vs. poprzednie)
- *  - transcript→ cool gray (transkrypcja)
  *  - neutral   → plain white (generic)
+ *
+ * Note: transcript is NOT a variant here — use TranscriptDrawer
+ * as a separate bottom sheet component instead.
  *
  * All variants share:
  *  - Same rounded-card border radius (24px)
- *  - Same padding (px-5 py-4)
- *  - Same header typography (14px medium + optional icon)
- *  - Left color bar (4px) instead of full background tint
- *    for subtlety while remaining distinct
+ *  - Same padding
+ *  - Same header typography (13px semibold + optional icon)
+ *  - Left color bar (4px) for variant identification
  */
 
 export type ReportSectionVariant =

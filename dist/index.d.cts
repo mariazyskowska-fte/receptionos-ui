@@ -1009,15 +1009,16 @@ declare function ReportCard({ brand, label, date, subtitle, status, score, score
  *  - improve   → orange tint (do poprawy)
  *  - recommend → brand tint (rekomendacje)
  *  - progress  → purple tint (postęp vs. poprzednie)
- *  - transcript→ cool gray (transkrypcja)
  *  - neutral   → plain white (generic)
+ *
+ * Note: transcript is NOT a variant here — use TranscriptDrawer
+ * as a separate bottom sheet component instead.
  *
  * All variants share:
  *  - Same rounded-card border radius (24px)
- *  - Same padding (px-5 py-4)
- *  - Same header typography (14px medium + optional icon)
- *  - Left color bar (4px) instead of full background tint
- *    for subtlety while remaining distinct
+ *  - Same padding
+ *  - Same header typography (13px semibold + optional icon)
+ *  - Left color bar (4px) for variant identification
  */
 type ReportSectionVariant = "scores" | "tips" | "strength" | "improve" | "recommend" | "progress" | "transcript" | "neutral";
 interface ReportSectionProps {
@@ -1036,36 +1037,47 @@ declare function ReportSection({ variant, title, icon, headerRight, children, cl
 /**
  * CardStack — swipe-to-dismiss card stack for report details.
  *
- * All cards are stacked on top of each other. The top card is fully
- * visible; cards beneath peek with increasing Y offset and decreasing
- * scale, showing their left accent bar (from ReportSection).
+ * Cards have fixed width (100% of container) and fixed shape.
+ * No scaling — all cards are the same size. Cards beneath the top
+ * one peek with a small Y offset showing their accent color bar.
  *
- * Swipe left on the top card → it flies off-screen, revealing the
- * next card. Progress dots update automatically.
+ * Swipe left → dismiss top card, reveal next.
+ * Progress dots track reading progress.
  *
- * Touch interaction:
- *  - Drag left beyond 30% of card width → dismiss (animate out)
- *  - Drag less than 30% → snap back
- *  - No drag right (can't undo dismiss)
- *
- * The dismissed card count indicates reading progress — the doctor
- * has "reviewed" each section of the report.
- *
- * Usage:
- *   <CardStack onProgress={(index, total) => ...}>
- *     <ReportSection variant="scores" title="Wyniki">...</ReportSection>
- *     <ReportSection variant="tips" title="Na następny raz">...</ReportSection>
- *     <ReportSection variant="strength" title="Mocne strony">...</ReportSection>
- *   </CardStack>
+ * Transcript is NOT part of this stack — use TranscriptDrawer
+ * separately as a bottom sheet.
  */
 interface CardStackProps {
     children: React.ReactNode;
-    /** Called when active card changes (for tracking reading progress). */
+    /** Called when active card changes. */
     onProgress?: (currentIndex: number, total: number) => void;
-    /** Brand accent for progress dots. */
     brand?: "callflow" | "consultflow" | "shiftflow";
     className?: string;
 }
 declare function CardStack({ children, onProgress, brand, className, }: CardStackProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * TranscriptDrawer — bottom sheet for transcript text, always
+ * accessible from the report detail view.
+ *
+ * Sits at the bottom of the screen as a collapsed bar showing
+ * "Transkrypcja ▲". Tap or drag up to expand and reveal the
+ * full scrollable transcript text. Tap the bar again or drag
+ * down to collapse.
+ *
+ * Separate from CardStack so the transcript is accessible at
+ * any point during report review, regardless of which card is
+ * currently on top.
+ */
+interface TranscriptDrawerProps {
+    /** Transcript text content. */
+    content: string;
+    /** Called when user copies transcript. */
+    onCopy?: () => void;
+    /** Label for collapsed state. */
+    label?: string;
+    className?: string;
+}
+declare function TranscriptDrawer({ content, onCopy, label, className, }: TranscriptDrawerProps): react_jsx_runtime.JSX.Element | null;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
