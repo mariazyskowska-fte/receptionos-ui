@@ -772,70 +772,63 @@ interface ScoreCardRowProps {
 declare function ScoreCardRow({ cards, displayScale, columns, className, }: ScoreCardRowProps): react_jsx_runtime.JSX.Element;
 
 /**
- * PerformanceOverview — aggregated area scores for a team member
- * across multiple reports/consultations over a time period.
+ * PerformanceOverview — horizontal card grid showing scores per area.
+ * Works in two modes:
  *
- * Contrast with ReportBreakdown:
- *  - ReportBreakdown = ONE report, exact scores, transcript quotes,
- *    "co poprawić na następny raz"
- *  - PerformanceOverview = AGGREGATE over period, trend per area,
- *    "jak się rozwijasz w czasie"
+ * 1. "snapshot" — scores from a single point in time (one report,
+ *    current state). No trend arrows, no delta. Similar to old
+ *    ScoreCardRow but with consistent card shape.
+ *
+ * 2. "aggregate" — averaged scores over a period with trend arrows,
+ *    delta vs. previous period, data point count, and
+ *    strengths/weaknesses summary footer.
+ *
+ * Cross-app usage:
+ *  - ConsultFlow manager: doctor detail (aggregate, 6 areas, /10 scale)
+ *  - ConsultFlow doctor:  "Moje wyniki" overview (aggregate)
+ *  - CallFlow manager:    receptionist detail (snapshot, 3 areas)
+ *  - ShiftFlow manager:   doctor utilization breakdown (snapshot, % scale)
  *
  * Source user stories:
- *  - ConsultFlow: US-CO-05 sc.3 — "pełna historia trendów i podsumowania
- *                 raportów z ostatnich 3 miesięcy"
- *  - ConsultFlow: US-CO-03 sc.1 — trend z adnotacjami
- *  - CallFlow:    US-CF-04 sc.1 — manager widzi "aktualny Empathy Score,
- *                 trend ↑/↓ i status ✓/❗" per recepcjonistka
- *
- * Visual pattern: same horizontal card grid as ReportBreakdown, but
- * each card shows average + trend arrow + report count instead of
- * exact score + transcript quote.
- *
- * Layout:
- *   ┌─────────────────────────────────────────────────────────┐
- *   │ Wyniki — ostatnie 3 miesiące          Średnia: 7.4     │
- *   ├─────────────────────────────────────────────────────────┤
- *   │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
- *   │ │Komplet.  │ │ Wartość  │ │ Obiekcje │ │ CTA      │   │
- *   │ │ 8.2  ✓ ↑ │ │ 7.1  ✓ → │ │ 4.8  ❗ ↓│ │ 6.9  ✓ ↑ │   │
- *   │ │████████░ │ │███████░░ │ │████░░░░░ │ │██████░░░ │   │
- *   │ │12 raportów│ │śr. +0.4  │ │śr. -1.2  │ │8 raportów│   │
- *   │ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
- *   ├─────────────────────────────────────────────────────────┤
- *   │ Mocne: Kompletność, CTA                                │
- *   │ Do poprawy: Obiekcje (najsłabszy, trend ↓)            │
- *   └─────────────────────────────────────────────────────────┘
+ *  - US-CO-05 sc.3 — "pełna historia trendów i podsumowania z 3 miesięcy"
+ *  - US-CO-03 sc.1 — trend z adnotacjami
+ *  - US-CF-04 sc.1 — "aktualny Empathy Score, trend ↑/↓ i status ✓/❗"
  */
 type AreaTrend = "up" | "down" | "flat";
 interface OverviewArea {
     name: string;
-    /** Average score 0–100 over the period. */
-    avgScore: number;
-    /** Average score in previous period (for delta). */
-    prevAvgScore?: number;
-    /** Trend direction. */
+    /** Score 0–100. */
+    score: number;
+    /** Previous score (for delta in aggregate mode). */
+    previousScore?: number;
+    /** Trend direction (aggregate mode only). */
     trend?: AreaTrend;
-    /** Number of data points (reports/consultations) that contributed. */
+    /** Number of data points (aggregate mode only). */
     dataPoints?: number;
 }
 interface PerformanceOverviewProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
-    /** Header title, e.g. "Wyniki — ostatnie 3 miesiące". */
+    /** "snapshot" = single point, "aggregate" = averaged over period. */
+    mode?: "snapshot" | "aggregate";
+    /** How to display scores: "ten" = /10 (default), "percent" = %. */
+    displayScale?: "ten" | "percent";
+    /** Header title. */
     title?: string;
-    /** Period label shown in subtitle, e.g. "sty–mar 2026". */
+    /** Period label (aggregate mode), e.g. "sty–mar 2026". */
     periodLabel?: string;
-    /** Overall average across all areas. */
-    overallAvg?: number;
-    /** Previous period overall average. */
-    prevOverallAvg?: number;
-    /** Aggregated area data. */
+    /** Overall score/average. */
+    overallScore?: number;
+    /** Previous overall (for delta). */
+    previousOverallScore?: number;
+    /** Area data. */
     areas: OverviewArea[];
-    /** Total reports/consultations in this period. */
-    totalReports?: number;
+    /** Badge in header, e.g. report count. */
+    headerBadge?: string;
+    /** Show strengths/weaknesses summary footer. Default: true in aggregate. */
+    showSummary?: boolean;
     className?: string;
 }
-declare function PerformanceOverview({ brand, title, periodLabel, overallAvg, prevOverallAvg, areas, totalReports, className, }: PerformanceOverviewProps): react_jsx_runtime.JSX.Element;
+declare function PerformanceOverview({ brand, mode, displayScale, title, periodLabel, overallScore, previousOverallScore, areas, headerBadge, showSummary, className, }: PerformanceOverviewProps): react_jsx_runtime.JSX.Element;
 
 /**
  * DashboardLayout — two-column manager dashboard.

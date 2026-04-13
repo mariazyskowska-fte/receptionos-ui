@@ -3,70 +3,63 @@ import { cn } from "../utils/cn";
 import { Badge } from "../primitives/Badge";
 
 /**
- * PerformanceOverview — aggregated area scores for a team member
- * across multiple reports/consultations over a time period.
+ * PerformanceOverview — horizontal card grid showing scores per area.
+ * Works in two modes:
  *
- * Contrast with ReportBreakdown:
- *  - ReportBreakdown = ONE report, exact scores, transcript quotes,
- *    "co poprawić na następny raz"
- *  - PerformanceOverview = AGGREGATE over period, trend per area,
- *    "jak się rozwijasz w czasie"
+ * 1. "snapshot" — scores from a single point in time (one report,
+ *    current state). No trend arrows, no delta. Similar to old
+ *    ScoreCardRow but with consistent card shape.
+ *
+ * 2. "aggregate" — averaged scores over a period with trend arrows,
+ *    delta vs. previous period, data point count, and
+ *    strengths/weaknesses summary footer.
+ *
+ * Cross-app usage:
+ *  - ConsultFlow manager: doctor detail (aggregate, 6 areas, /10 scale)
+ *  - ConsultFlow doctor:  "Moje wyniki" overview (aggregate)
+ *  - CallFlow manager:    receptionist detail (snapshot, 3 areas)
+ *  - ShiftFlow manager:   doctor utilization breakdown (snapshot, % scale)
  *
  * Source user stories:
- *  - ConsultFlow: US-CO-05 sc.3 — "pełna historia trendów i podsumowania
- *                 raportów z ostatnich 3 miesięcy"
- *  - ConsultFlow: US-CO-03 sc.1 — trend z adnotacjami
- *  - CallFlow:    US-CF-04 sc.1 — manager widzi "aktualny Empathy Score,
- *                 trend ↑/↓ i status ✓/❗" per recepcjonistka
- *
- * Visual pattern: same horizontal card grid as ReportBreakdown, but
- * each card shows average + trend arrow + report count instead of
- * exact score + transcript quote.
- *
- * Layout:
- *   ┌─────────────────────────────────────────────────────────┐
- *   │ Wyniki — ostatnie 3 miesiące          Średnia: 7.4     │
- *   ├─────────────────────────────────────────────────────────┤
- *   │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
- *   │ │Komplet.  │ │ Wartość  │ │ Obiekcje │ │ CTA      │   │
- *   │ │ 8.2  ✓ ↑ │ │ 7.1  ✓ → │ │ 4.8  ❗ ↓│ │ 6.9  ✓ ↑ │   │
- *   │ │████████░ │ │███████░░ │ │████░░░░░ │ │██████░░░ │   │
- *   │ │12 raportów│ │śr. +0.4  │ │śr. -1.2  │ │8 raportów│   │
- *   │ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
- *   ├─────────────────────────────────────────────────────────┤
- *   │ Mocne: Kompletność, CTA                                │
- *   │ Do poprawy: Obiekcje (najsłabszy, trend ↓)            │
- *   └─────────────────────────────────────────────────────────┘
+ *  - US-CO-05 sc.3 — "pełna historia trendów i podsumowania z 3 miesięcy"
+ *  - US-CO-03 sc.1 — trend z adnotacjami
+ *  - US-CF-04 sc.1 — "aktualny Empathy Score, trend ↑/↓ i status ✓/❗"
  */
 
 export type AreaTrend = "up" | "down" | "flat";
 
 export interface OverviewArea {
   name: string;
-  /** Average score 0–100 over the period. */
-  avgScore: number;
-  /** Average score in previous period (for delta). */
-  prevAvgScore?: number;
-  /** Trend direction. */
+  /** Score 0–100. */
+  score: number;
+  /** Previous score (for delta in aggregate mode). */
+  previousScore?: number;
+  /** Trend direction (aggregate mode only). */
   trend?: AreaTrend;
-  /** Number of data points (reports/consultations) that contributed. */
+  /** Number of data points (aggregate mode only). */
   dataPoints?: number;
 }
 
 export interface PerformanceOverviewProps {
   brand?: "callflow" | "consultflow" | "shiftflow";
-  /** Header title, e.g. "Wyniki — ostatnie 3 miesiące". */
+  /** "snapshot" = single point, "aggregate" = averaged over period. */
+  mode?: "snapshot" | "aggregate";
+  /** How to display scores: "ten" = /10 (default), "percent" = %. */
+  displayScale?: "ten" | "percent";
+  /** Header title. */
   title?: string;
-  /** Period label shown in subtitle, e.g. "sty–mar 2026". */
+  /** Period label (aggregate mode), e.g. "sty–mar 2026". */
   periodLabel?: string;
-  /** Overall average across all areas. */
-  overallAvg?: number;
-  /** Previous period overall average. */
-  prevOverallAvg?: number;
-  /** Aggregated area data. */
+  /** Overall score/average. */
+  overallScore?: number;
+  /** Previous overall (for delta). */
+  previousOverallScore?: number;
+  /** Area data. */
   areas: OverviewArea[];
-  /** Total reports/consultations in this period. */
-  totalReports?: number;
+  /** Badge in header, e.g. report count. */
+  headerBadge?: string;
+  /** Show strengths/weaknesses summary footer. Default: true in aggregate. */
+  showSummary?: boolean;
   className?: string;
 }
 
@@ -82,30 +75,47 @@ function scoreText(score: number): string {
   return "text-ros-danger-fg";
 }
 
-const trendGlyph: Record<AreaTrend, { glyph: string; tone: "success" | "danger" | "neutral" }> = {
-  up: { glyph: "↑", tone: "success" },
-  down: { glyph: "↓", tone: "danger" },
-  flat: { glyph: "→", tone: "neutral" },
+const trendGlyph: Record<AreaTrend, { glyph: string; color: string }> = {
+  up: { glyph: "↑", color: "text-ros-success-fg" },
+  down: { glyph: "↓", color: "text-ros-danger-fg" },
+  flat: { glyph: "→", color: "text-ros-ink-faint" },
 };
+
+function formatScore(score: number, scale: "ten" | "percent"): string {
+  if (score === 0) return "—";
+  if (scale === "ten") return (score / 10).toFixed(1);
+  return `${score}%`;
+}
+
+function formatDelta(current: number, previous: number, scale: "ten" | "percent"): string {
+  const diff = scale === "ten"
+    ? ((current - previous) / 10)
+    : (current - previous);
+  if (diff === 0) return "";
+  const sign = diff > 0 ? "+" : "";
+  return scale === "ten"
+    ? `${sign}${diff.toFixed(1)} vs. poprz.`
+    : `${sign}${Math.round(diff)}% vs. poprz.`;
+}
 
 export function PerformanceOverview({
   brand = "callflow",
+  mode = "aggregate",
+  displayScale = "ten",
   title = "Wyniki",
   periodLabel,
-  overallAvg,
-  prevOverallAvg,
+  overallScore,
+  previousOverallScore,
   areas,
-  totalReports,
+  headerBadge,
+  showSummary,
   className,
 }: PerformanceOverviewProps) {
+  const shouldShowSummary = showSummary ?? mode === "aggregate";
+
   const weakest = React.useMemo(() => {
     if (areas.length === 0) return null;
-    return areas.reduce((min, a) => (a.avgScore < min.avgScore ? a : min), areas[0]);
-  }, [areas]);
-
-  const strongest = React.useMemo(() => {
-    if (areas.length === 0) return null;
-    return areas.reduce((max, a) => (a.avgScore > max.avgScore ? a : max), areas[0]);
+    return areas.reduce((min, a) => (a.score < min.score ? a : min), areas[0]);
   }, [areas]);
 
   const colClass =
@@ -114,49 +124,36 @@ export function PerformanceOverview({
     : "grid-cols-3 lg:grid-cols-6";
 
   return (
-    <div
-      className={cn(
-        "rounded-card border border-ros-border bg-white flex flex-col",
-        className,
-      )}
-    >
+    <div className={cn("rounded-card border border-ros-border bg-white flex flex-col", className)}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <p className="text-[14px] leading-[20px] font-medium text-ros-ink">
-            {title}
-          </p>
+          <p className="text-[14px] leading-[20px] font-medium text-ros-ink">{title}</p>
           {periodLabel && (
             <span className="text-[12px] text-ros-ink-faint">{periodLabel}</span>
           )}
-          {totalReports != null && (
-            <Badge tone="neutral">{totalReports} raportów</Badge>
-          )}
+          {headerBadge && <Badge tone="neutral">{headerBadge}</Badge>}
         </div>
-        {overallAvg != null && (
+        {overallScore != null && (
           <div className="flex items-baseline gap-2">
-            {prevOverallAvg != null && prevOverallAvg !== overallAvg && (
+            {previousOverallScore != null && previousOverallScore !== overallScore && (
               <span className="text-[14px] text-ros-ink-muted">
-                {(prevOverallAvg / 10).toFixed(1)} →
+                {formatScore(previousOverallScore, displayScale)} →
               </span>
             )}
             <span className="text-[24px] leading-none font-medium text-ros-ink">
-              {(overallAvg / 10).toFixed(1)}
+              {formatScore(overallScore, displayScale)}
             </span>
-            <span className="text-[12px] text-ros-ink-muted">/10</span>
           </div>
         )}
       </div>
 
-      {/* Area cards — horizontal grid */}
+      {/* Area cards */}
       <div className={cn("grid gap-2 px-5 pb-4", colClass)}>
         {areas.map((area) => {
           const isWeakest = weakest && area.name === weakest.name;
-          const isPositive = area.avgScore >= 70;
-          const delta = area.prevAvgScore != null
-            ? ((area.avgScore - area.prevAvgScore) / 10).toFixed(1)
-            : null;
-          const trend = area.trend;
+          const isPositive = area.score >= 70;
+          const hasDelta = area.previousScore != null && area.previousScore !== area.score;
 
           return (
             <div
@@ -168,41 +165,41 @@ export function PerformanceOverview({
                   : "bg-ros-surface-off",
               )}
             >
-              {/* Name + trend arrow */}
+              {/* Name + indicators */}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate">
                   {area.name}
                 </span>
                 <div className="flex items-center gap-1">
-                  <span className={cn("text-[11px]", scoreText(area.avgScore))}>
+                  <span className={cn("text-[11px]", scoreText(area.score))}>
                     {isPositive ? "✓" : "❗"}
                   </span>
-                  {trend && (
-                    <span className={cn("text-[11px]", `text-ros-${trendGlyph[trend].tone === "success" ? "success-fg" : trendGlyph[trend].tone === "danger" ? "danger-fg" : "ink-faint"}`)}>
-                      {trendGlyph[trend].glyph}
+                  {mode === "aggregate" && area.trend && (
+                    <span className={cn("text-[11px]", trendGlyph[area.trend].color)}>
+                      {trendGlyph[area.trend].glyph}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Average score */}
-              <span className={cn("text-[20px] leading-none font-bold", scoreText(area.avgScore))}>
-                {area.avgScore > 0 ? (area.avgScore / 10).toFixed(1) : "—"}
+              {/* Score */}
+              <span className={cn("text-[20px] leading-none font-bold", scoreText(area.score))}>
+                {formatScore(area.score, displayScale)}
               </span>
 
               {/* Progress bar */}
               <div className="w-full h-1 bg-ros-border rounded-pill overflow-hidden">
                 <div
-                  className={cn("h-full rounded-pill", barColor(area.avgScore))}
-                  style={{ width: `${Math.min(100, Math.max(0, area.avgScore))}%` }}
+                  className={cn("h-full rounded-pill", barColor(area.score))}
+                  style={{ width: `${Math.min(100, Math.max(0, area.score))}%` }}
                 />
               </div>
 
-              {/* Context line: delta or data points (instead of quote) */}
+              {/* Context line */}
               <p className="text-[10px] leading-[14px] text-ros-ink-faint">
-                {delta != null && parseFloat(delta) !== 0
-                  ? `${parseFloat(delta) > 0 ? "+" : ""}${delta} vs. poprz.`
-                  : area.dataPoints != null
+                {mode === "aggregate" && hasDelta
+                  ? formatDelta(area.score, area.previousScore!, displayScale)
+                  : mode === "aggregate" && area.dataPoints != null
                     ? `${area.dataPoints} raportów`
                     : ""}
               </p>
@@ -211,16 +208,16 @@ export function PerformanceOverview({
         })}
       </div>
 
-      {/* Summary line: strengths + weaknesses */}
-      {(strongest || weakest) && (
+      {/* Summary footer */}
+      {shouldShowSummary && areas.length > 0 && (
         <div className="border-t border-ros-border px-5 py-3 flex flex-wrap gap-x-6 gap-y-1">
-          {strongest && strongest.avgScore >= 70 && (
+          {areas.some(a => a.score >= 70) && (
             <p className="text-[12px] text-ros-ink-muted">
               <span className="text-ros-success-fg font-medium">Mocne:</span>{" "}
-              {areas.filter(a => a.avgScore >= 70).map(a => a.name).join(", ")}
+              {areas.filter(a => a.score >= 70).map(a => a.name).join(", ")}
             </p>
           )}
-          {weakest && weakest.avgScore < 70 && (
+          {weakest && weakest.score < 70 && (
             <p className="text-[12px] text-ros-ink-muted">
               <span className="text-ros-danger-fg font-medium">Do poprawy:</span>{" "}
               {weakest.name}

@@ -1617,105 +1617,102 @@ function scoreText3(score) {
   return "text-ros-danger-fg";
 }
 var trendGlyph3 = {
-  up: { glyph: "\u2191", tone: "success" },
-  down: { glyph: "\u2193", tone: "danger" },
-  flat: { glyph: "\u2192", tone: "neutral" }
+  up: { glyph: "\u2191", color: "text-ros-success-fg" },
+  down: { glyph: "\u2193", color: "text-ros-danger-fg" },
+  flat: { glyph: "\u2192", color: "text-ros-ink-faint" }
 };
+function formatScore2(score, scale) {
+  if (score === 0) return "\u2014";
+  if (scale === "ten") return (score / 10).toFixed(1);
+  return `${score}%`;
+}
+function formatDelta(current, previous, scale) {
+  const diff = scale === "ten" ? (current - previous) / 10 : current - previous;
+  if (diff === 0) return "";
+  const sign = diff > 0 ? "+" : "";
+  return scale === "ten" ? `${sign}${diff.toFixed(1)} vs. poprz.` : `${sign}${Math.round(diff)}% vs. poprz.`;
+}
 function PerformanceOverview({
   brand = "callflow",
+  mode = "aggregate",
+  displayScale = "ten",
   title = "Wyniki",
   periodLabel,
-  overallAvg,
-  prevOverallAvg,
+  overallScore,
+  previousOverallScore,
   areas,
-  totalReports,
+  headerBadge,
+  showSummary,
   className
 }) {
+  const shouldShowSummary = showSummary ?? mode === "aggregate";
   const weakest = React9.useMemo(() => {
     if (areas.length === 0) return null;
-    return areas.reduce((min, a) => a.avgScore < min.avgScore ? a : min, areas[0]);
-  }, [areas]);
-  const strongest = React9.useMemo(() => {
-    if (areas.length === 0) return null;
-    return areas.reduce((max, a) => a.avgScore > max.avgScore ? a : max, areas[0]);
+    return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
   }, [areas]);
   const colClass = areas.length <= 3 ? "grid-cols-3" : areas.length <= 4 ? "grid-cols-4" : "grid-cols-3 lg:grid-cols-6";
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
-    "div",
-    {
-      className: cn(
-        "rounded-card border border-ros-border bg-white flex flex-col",
-        className
-      ),
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between px-5 pt-5 pb-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: title }),
-            periodLabel && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-faint", children: periodLabel }),
-            totalReports != null && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Badge, { tone: "neutral", children: [
-              totalReports,
-              " raport\xF3w"
-            ] })
-          ] }),
-          overallAvg != null && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-baseline gap-2", children: [
-            prevOverallAvg != null && prevOverallAvg !== overallAvg && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "text-[14px] text-ros-ink-muted", children: [
-              (prevOverallAvg / 10).toFixed(1),
-              " \u2192"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[24px] leading-none font-medium text-ros-ink", children: (overallAvg / 10).toFixed(1) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-muted", children: "/10" })
-          ] })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("rounded-card border border-ros-border bg-white flex flex-col", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between px-5 pt-5 pb-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[14px] leading-[20px] font-medium text-ros-ink", children: title }),
+        periodLabel && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[12px] text-ros-ink-faint", children: periodLabel }),
+        headerBadge && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Badge, { tone: "neutral", children: headerBadge })
+      ] }),
+      overallScore != null && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-baseline gap-2", children: [
+        previousOverallScore != null && previousOverallScore !== overallScore && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "text-[14px] text-ros-ink-muted", children: [
+          formatScore2(previousOverallScore, displayScale),
+          " \u2192"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("grid gap-2 px-5 pb-4", colClass), children: areas.map((area) => {
-          const isWeakest = weakest && area.name === weakest.name;
-          const isPositive = area.avgScore >= 70;
-          const delta = area.prevAvgScore != null ? ((area.avgScore - area.prevAvgScore) / 10).toFixed(1) : null;
-          const trend = area.trend;
-          return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
-            "div",
-            {
-              className: cn(
-                "rounded-stat p-3 flex flex-col gap-1.5",
-                isWeakest ? "bg-ros-danger-bg/50 ring-1 ring-ros-danger-fg/20" : "bg-ros-surface-off"
-              ),
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate", children: area.name }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-1", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", scoreText3(area.avgScore)), children: isPositive ? "\u2713" : "\u2757" }),
-                    trend && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", `text-ros-${trendGlyph3[trend].tone === "success" ? "success-fg" : trendGlyph3[trend].tone === "danger" ? "danger-fg" : "ink-faint"}`), children: trendGlyph3[trend].glyph })
-                  ] })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[20px] leading-none font-bold", scoreText3(area.avgScore)), children: area.avgScore > 0 ? (area.avgScore / 10).toFixed(1) : "\u2014" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "w-full h-1 bg-ros-border rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-                  "div",
-                  {
-                    className: cn("h-full rounded-pill", barColor3(area.avgScore)),
-                    style: { width: `${Math.min(100, Math.max(0, area.avgScore))}%` }
-                  }
-                ) }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[10px] leading-[14px] text-ros-ink-faint", children: delta != null && parseFloat(delta) !== 0 ? `${parseFloat(delta) > 0 ? "+" : ""}${delta} vs. poprz.` : area.dataPoints != null ? `${area.dataPoints} raport\xF3w` : "" })
-              ]
-            },
-            area.name
-          );
-        }) }),
-        (strongest || weakest) && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "border-t border-ros-border px-5 py-3 flex flex-wrap gap-x-6 gap-y-1", children: [
-          strongest && strongest.avgScore >= 70 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-success-fg font-medium", children: "Mocne:" }),
-            " ",
-            areas.filter((a) => a.avgScore >= 70).map((a) => a.name).join(", ")
-          ] }),
-          weakest && weakest.avgScore < 70 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-danger-fg font-medium", children: "Do poprawy:" }),
-            " ",
-            weakest.name,
-            weakest.trend === "down" && " (trend \u2193)"
-          ] })
-        ] })
-      ]
-    }
-  );
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[24px] leading-none font-medium text-ros-ink", children: formatScore2(overallScore, displayScale) })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("grid gap-2 px-5 pb-4", colClass), children: areas.map((area) => {
+      const isWeakest = weakest && area.name === weakest.name;
+      const isPositive = area.score >= 70;
+      const hasDelta = area.previousScore != null && area.previousScore !== area.score;
+      return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+        "div",
+        {
+          className: cn(
+            "rounded-stat p-3 flex flex-col gap-1.5",
+            isWeakest ? "bg-ros-danger-bg/50 ring-1 ring-ros-danger-fg/20" : "bg-ros-surface-off"
+          ),
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate", children: area.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", scoreText3(area.score)), children: isPositive ? "\u2713" : "\u2757" }),
+                mode === "aggregate" && area.trend && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[11px]", trendGlyph3[area.trend].color), children: trendGlyph3[area.trend].glyph })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("text-[20px] leading-none font-bold", scoreText3(area.score)), children: formatScore2(area.score, displayScale) }),
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "w-full h-1 bg-ros-border rounded-pill overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              "div",
+              {
+                className: cn("h-full rounded-pill", barColor3(area.score)),
+                style: { width: `${Math.min(100, Math.max(0, area.score))}%` }
+              }
+            ) }),
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[10px] leading-[14px] text-ros-ink-faint", children: mode === "aggregate" && hasDelta ? formatDelta(area.score, area.previousScore, displayScale) : mode === "aggregate" && area.dataPoints != null ? `${area.dataPoints} raport\xF3w` : "" })
+          ]
+        },
+        area.name
+      );
+    }) }),
+    shouldShowSummary && areas.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "border-t border-ros-border px-5 py-3 flex flex-wrap gap-x-6 gap-y-1", children: [
+      areas.some((a) => a.score >= 70) && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-success-fg font-medium", children: "Mocne:" }),
+        " ",
+        areas.filter((a) => a.score >= 70).map((a) => a.name).join(", ")
+      ] }),
+      weakest && weakest.score < 70 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-[12px] text-ros-ink-muted", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-ros-danger-fg font-medium", children: "Do poprawy:" }),
+        " ",
+        weakest.name,
+        weakest.trend === "down" && " (trend \u2193)"
+      ] })
+    ] })
+  ] });
 }
 
 // src/patterns/DashboardLayout.tsx
