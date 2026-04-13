@@ -996,4 +996,74 @@ interface ReportCardProps {
 }
 declare function ReportCard({ brand, label, date, subtitle, status, score, scoreDetails, onOpen, className, }: ReportCardProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+/**
+ * ReportSection — unified card for report detail sections.
+ * Each section has the same shape as PerformanceOverview (rounded-card,
+ * header row, content) but with a subtle color accent that signals
+ * the section's purpose.
+ *
+ * Variants:
+ *  - scores    → neutral white (default, for ReportBreakdown)
+ *  - tips      → warm orange tint (quick tips, "na następny raz")
+ *  - strength  → green tint (mocne strony)
+ *  - improve   → orange tint (do poprawy)
+ *  - recommend → brand tint (rekomendacje)
+ *  - progress  → purple tint (postęp vs. poprzednie)
+ *  - transcript→ cool gray (transkrypcja)
+ *  - neutral   → plain white (generic)
+ *
+ * All variants share:
+ *  - Same rounded-card border radius (24px)
+ *  - Same padding (px-5 py-4)
+ *  - Same header typography (14px medium + optional icon)
+ *  - Left color bar (4px) instead of full background tint
+ *    for subtlety while remaining distinct
+ */
+type ReportSectionVariant = "scores" | "tips" | "strength" | "improve" | "recommend" | "progress" | "transcript" | "neutral";
+interface ReportSectionProps {
+    variant?: ReportSectionVariant;
+    /** Section title shown in header. */
+    title: string;
+    /** Icon rendered before the title (16px recommended). */
+    icon?: React.ReactNode;
+    /** Optional right-side header content (badge, button). */
+    headerRight?: React.ReactNode;
+    children: React.ReactNode;
+    className?: string;
+}
+declare function ReportSection({ variant, title, icon, headerRight, children, className, }: ReportSectionProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * CardStack — vertical stack of cards with peek effect and swipe-to-
+ * dismiss interaction. Cards are stacked with a slight vertical offset
+ * revealing the color accent of cards beneath.
+ *
+ * Two modes:
+ *  - "peek" (default): all cards visible in a scrollable list with
+ *    stacking depth illusion (shadow + slight scale on inactive cards)
+ *  - "single": one card at a time, swipe up to reveal next
+ *
+ * For mobile report details: the doctor sees the top card (scores),
+ * swipes up to see tips, then strengths, etc. Each card's left
+ * accent bar peeks from beneath, hinting at the stack depth and
+ * type of content below.
+ *
+ * Usage:
+ *   <CardStack>
+ *     <ReportSection variant="scores" title="Wyniki">...</ReportSection>
+ *     <ReportSection variant="tips" title="Na następny raz">...</ReportSection>
+ *     <ReportSection variant="strength" title="Mocne strony">...</ReportSection>
+ *     <ReportSection variant="improve" title="Do poprawy">...</ReportSection>
+ *     <ReportSection variant="transcript" title="Transkrypcja">...</ReportSection>
+ *   </CardStack>
+ */
+interface CardStackProps {
+    /** Cards to stack (ReportSection components). */
+    children: React.ReactNode;
+    /** Visual mode. */
+    mode?: "peek" | "single";
+    className?: string;
+}
+declare function CardStack({ children, mode, className, }: CardStackProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };

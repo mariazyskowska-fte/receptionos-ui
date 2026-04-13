@@ -1972,6 +1972,158 @@ function ReportCard({
     }
   );
 }
+
+// src/patterns/ReportSection.tsx
+import { jsx as jsx25, jsxs as jsxs22 } from "react/jsx-runtime";
+var variantStyles = {
+  scores: {
+    border: "border-ros-border",
+    bg: "bg-white",
+    accent: "bg-ros-ink-faint",
+    titleColor: "text-ros-ink"
+  },
+  tips: {
+    border: "border-[#fed7aa]",
+    bg: "bg-[#fffbf5]",
+    accent: "bg-ros-warn-fg",
+    titleColor: "text-[#c2410c]"
+  },
+  strength: {
+    border: "border-[#bbf7d0]",
+    bg: "bg-[#f7fef9]",
+    accent: "bg-ros-success-fg",
+    titleColor: "text-ros-success-fg"
+  },
+  improve: {
+    border: "border-[#fed7aa]",
+    bg: "bg-[#fffaf5]",
+    accent: "bg-[#ea580c]",
+    titleColor: "text-[#ea580c]"
+  },
+  recommend: {
+    border: "border-[#c4b5fd]",
+    bg: "bg-[#faf8ff]",
+    accent: "bg-[#7c3aed]",
+    titleColor: "text-[#7c3aed]"
+  },
+  progress: {
+    border: "border-[#c4b5fd]",
+    bg: "bg-[#fdf8ff]",
+    accent: "bg-[#9333ea]",
+    titleColor: "text-[#9333ea]"
+  },
+  transcript: {
+    border: "border-ros-border",
+    bg: "bg-ros-surface-off",
+    accent: "bg-ros-ink-muted",
+    titleColor: "text-ros-ink-medium"
+  },
+  neutral: {
+    border: "border-ros-border",
+    bg: "bg-white",
+    accent: "bg-ros-ink-faint",
+    titleColor: "text-ros-ink"
+  }
+};
+function ReportSection({
+  variant = "neutral",
+  title,
+  icon,
+  headerRight,
+  children,
+  className
+}) {
+  const v = variantStyles[variant];
+  return /* @__PURE__ */ jsx25(
+    "div",
+    {
+      className: cn(
+        "rounded-card border overflow-hidden flex flex-col",
+        v.border,
+        v.bg,
+        className
+      ),
+      children: /* @__PURE__ */ jsxs22("div", { className: "flex", children: [
+        /* @__PURE__ */ jsx25("div", { className: cn("w-1 flex-shrink-0", v.accent) }),
+        /* @__PURE__ */ jsxs22("div", { className: "flex-1 flex flex-col", children: [
+          /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between px-4 pt-4 pb-2", children: [
+            /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
+              icon && /* @__PURE__ */ jsx25("span", { className: cn("flex-shrink-0", v.titleColor), children: icon }),
+              /* @__PURE__ */ jsx25("p", { className: cn("text-[13px] leading-[18px] font-semibold", v.titleColor), children: title })
+            ] }),
+            headerRight
+          ] }),
+          /* @__PURE__ */ jsx25("div", { className: "px-4 pb-4", children })
+        ] })
+      ] })
+    }
+  );
+}
+
+// src/patterns/CardStack.tsx
+import * as React12 from "react";
+import { jsx as jsx26, jsxs as jsxs23 } from "react/jsx-runtime";
+function CardStack({
+  children,
+  mode = "peek",
+  className
+}) {
+  const cards = React12.Children.toArray(children);
+  const [activeIndex, setActiveIndex] = React12.useState(0);
+  if (mode === "single") {
+    return /* @__PURE__ */ jsxs23("div", { className: cn("relative", className), children: [
+      /* @__PURE__ */ jsx26("div", { className: "relative", children: cards.map((card, i) => {
+        if (i < activeIndex) return null;
+        const offset = i - activeIndex;
+        if (offset > 2) return null;
+        return /* @__PURE__ */ jsx26(
+          "div",
+          {
+            className: cn(
+              "transition-all duration-300",
+              offset === 0 ? "relative z-10" : "absolute inset-x-0 top-0 z-0"
+            ),
+            style: {
+              transform: offset > 0 ? `translateY(${offset * 8}px) scale(${1 - offset * 0.03})` : void 0,
+              opacity: offset > 0 ? 0.6 : 1
+            },
+            children: card
+          },
+          i
+        );
+      }) }),
+      cards.length > 1 && /* @__PURE__ */ jsx26("div", { className: "flex items-center justify-center gap-1.5 pt-3", children: cards.map((_, i) => /* @__PURE__ */ jsx26(
+        "button",
+        {
+          type: "button",
+          onClick: () => setActiveIndex(i),
+          className: cn(
+            "rounded-pill transition-all duration-200 border-none cursor-pointer p-0",
+            i === activeIndex ? "w-4 h-1.5 bg-ros-ink-medium" : "w-1.5 h-1.5 bg-ros-ink-faint/40"
+          ),
+          "aria-label": `Karta ${i + 1}`
+        },
+        i
+      )) })
+    ] });
+  }
+  return /* @__PURE__ */ jsx26("div", { className: cn("flex flex-col", className), children: cards.map((card, i) => /* @__PURE__ */ jsx26(
+    "div",
+    {
+      className: cn(
+        "transition-all duration-200",
+        // Negative margin to create overlap/peek effect
+        i > 0 && "-mt-2"
+      ),
+      style: {
+        // Subtle z-index stacking so later cards overlap earlier
+        zIndex: cards.length - i
+      },
+      children: card
+    },
+    i
+  )) });
+}
 export {
   ActivityLog,
   AppHeader,
@@ -1979,6 +2131,7 @@ export {
   Badge,
   Button,
   Card,
+  CardStack,
   DashboardHeader,
   DashboardLayout,
   EmptyState,
@@ -1994,6 +2147,7 @@ export {
   ProfileForm,
   ReportBreakdown,
   ReportCard,
+  ReportSection,
   ScoreCardRow,
   SwipeView,
   TeamHeatmap,

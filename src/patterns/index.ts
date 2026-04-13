@@ -101,3 +101,12 @@ export {
   type ReportCardProps,
   type ReportCardStatus,
 } from "./ReportCard";
+export {
+  ReportSection,
+  type ReportSectionProps,
+  type ReportSectionVariant,
+} from "./ReportSection";
+export {
+  CardStack,
+  type CardStackProps,
+} from "./CardStack";
