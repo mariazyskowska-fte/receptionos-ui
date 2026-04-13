@@ -2123,66 +2123,128 @@ function ReportSection({
 // src/patterns/CardStack.tsx
 var React12 = __toESM(require("react"), 1);
 var import_jsx_runtime26 = require("react/jsx-runtime");
+var brandDot2 = {
+  callflow: "bg-brand-callflow",
+  consultflow: "bg-brand-consultflow",
+  shiftflow: "bg-brand-shiftflow"
+};
 function CardStack({
   children,
-  mode = "peek",
+  onProgress,
+  brand = "callflow",
   className
 }) {
   const cards = React12.Children.toArray(children);
+  const total = cards.length;
   const [activeIndex, setActiveIndex] = React12.useState(0);
-  if (mode === "single") {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: cn("relative", className), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "relative", children: cards.map((card, i) => {
-        if (i < activeIndex) return null;
-        const offset = i - activeIndex;
-        if (offset > 2) return null;
-        return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-          "div",
-          {
-            className: cn(
-              "transition-all duration-300",
-              offset === 0 ? "relative z-10" : "absolute inset-x-0 top-0 z-0"
-            ),
-            style: {
-              transform: offset > 0 ? `translateY(${offset * 8}px) scale(${1 - offset * 0.03})` : void 0,
-              opacity: offset > 0 ? 0.6 : 1
+  const [dragX, setDragX] = React12.useState(0);
+  const [isDragging, setIsDragging] = React12.useState(false);
+  const [dismissing, setDismissing] = React12.useState(false);
+  const startX = React12.useRef(0);
+  const cardRef = React12.useRef(null);
+  function handleTouchStart(e) {
+    if (dismissing) return;
+    startX.current = e.touches[0].clientX;
+    setIsDragging(true);
+  }
+  function handleMouseDown(e) {
+    if (dismissing) return;
+    startX.current = e.clientX;
+    setIsDragging(true);
+  }
+  function handleMove(clientX) {
+    if (!isDragging || dismissing) return;
+    const delta = clientX - startX.current;
+    setDragX(Math.min(0, delta));
+  }
+  function handleTouchMove(e) {
+    handleMove(e.touches[0].clientX);
+  }
+  function handleMouseMove(e) {
+    if (!isDragging) return;
+    handleMove(e.clientX);
+  }
+  function handleEnd() {
+    if (!isDragging || dismissing) return;
+    setIsDragging(false);
+    const width = cardRef.current?.offsetWidth || 300;
+    const threshold = width * 0.3;
+    if (Math.abs(dragX) > threshold && activeIndex < total - 1) {
+      setDismissing(true);
+      setDragX(-width * 1.2);
+      setTimeout(() => {
+        const next = activeIndex + 1;
+        setActiveIndex(next);
+        setDragX(0);
+        setDismissing(false);
+        onProgress?.(next, total);
+      }, 250);
+    } else {
+      setDragX(0);
+    }
+  }
+  const isLast = activeIndex >= total - 1;
+  const progress = Math.min(activeIndex + 1, total);
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: cn("flex flex-col gap-3", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+      "div",
+      {
+        className: "relative",
+        style: { minHeight: 200 },
+        children: cards.map((card, i) => {
+          if (i < activeIndex) return null;
+          const offset = i - activeIndex;
+          if (offset > 3) return null;
+          const isTop = offset === 0;
+          const yShift = offset * 12;
+          const scaleVal = 1 - offset * 0.04;
+          const opacity = offset === 0 ? 1 : offset === 1 ? 0.7 : 0.4;
+          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "div",
+            {
+              ref: isTop ? cardRef : void 0,
+              className: cn(
+                "transition-transform",
+                isTop ? isDragging ? "duration-0" : "duration-250" : "duration-300",
+                isTop ? "relative z-10" : "absolute inset-x-0 top-0"
+              ),
+              style: {
+                transform: isTop ? `translateX(${dragX}px) rotate(${dragX * 0.02}deg)` : `translateY(${yShift}px) scale(${scaleVal})`,
+                opacity,
+                zIndex: total - offset
+              },
+              onTouchStart: isTop && !isLast ? handleTouchStart : void 0,
+              onTouchMove: isTop ? handleTouchMove : void 0,
+              onTouchEnd: isTop ? handleEnd : void 0,
+              onMouseDown: isTop && !isLast ? handleMouseDown : void 0,
+              onMouseMove: isTop ? handleMouseMove : void 0,
+              onMouseUp: isTop ? handleEnd : void 0,
+              onMouseLeave: isTop && isDragging ? handleEnd : void 0,
+              children: card
             },
-            children: card
-          },
-          i
-        );
-      }) }),
-      cards.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex items-center justify-center gap-1.5 pt-3", children: cards.map((_, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-        "button",
+            i
+          );
+        })
+      }
+    ),
+    total > 1 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex items-center gap-1.5", children: cards.map((_, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        "div",
         {
-          type: "button",
-          onClick: () => setActiveIndex(i),
           className: cn(
-            "rounded-pill transition-all duration-200 border-none cursor-pointer p-0",
-            i === activeIndex ? "w-4 h-1.5 bg-ros-ink-medium" : "w-1.5 h-1.5 bg-ros-ink-faint/40"
-          ),
-          "aria-label": `Karta ${i + 1}`
+            "rounded-pill transition-all duration-200",
+            i < activeIndex ? cn("w-4 h-1.5", brandDot2[brand], "opacity-40") : i === activeIndex ? cn("w-6 h-1.5", brandDot2[brand]) : "w-1.5 h-1.5 bg-ros-ink-faint/30"
+          )
         },
         i
-      )) })
-    ] });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: cn("flex flex-col", className), children: cards.map((card, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-    "div",
-    {
-      className: cn(
-        "transition-all duration-200",
-        // Negative margin to create overlap/peek effect
-        i > 0 && "-mt-2"
-      ),
-      style: {
-        // Subtle z-index stacking so later cards overlap earlier
-        zIndex: cards.length - i
-      },
-      children: card
-    },
-    i
-  )) });
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "text-[11px] text-ros-ink-faint", children: [
+        progress,
+        "/",
+        total
+      ] })
+    ] })
+  ] });
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

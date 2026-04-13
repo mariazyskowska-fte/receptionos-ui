@@ -1034,36 +1034,38 @@ interface ReportSectionProps {
 declare function ReportSection({ variant, title, icon, headerRight, children, className, }: ReportSectionProps): react_jsx_runtime.JSX.Element;
 
 /**
- * CardStack — vertical stack of cards with peek effect and swipe-to-
- * dismiss interaction. Cards are stacked with a slight vertical offset
- * revealing the color accent of cards beneath.
+ * CardStack — swipe-to-dismiss card stack for report details.
  *
- * Two modes:
- *  - "peek" (default): all cards visible in a scrollable list with
- *    stacking depth illusion (shadow + slight scale on inactive cards)
- *  - "single": one card at a time, swipe up to reveal next
+ * All cards are stacked on top of each other. The top card is fully
+ * visible; cards beneath peek with increasing Y offset and decreasing
+ * scale, showing their left accent bar (from ReportSection).
  *
- * For mobile report details: the doctor sees the top card (scores),
- * swipes up to see tips, then strengths, etc. Each card's left
- * accent bar peeks from beneath, hinting at the stack depth and
- * type of content below.
+ * Swipe left on the top card → it flies off-screen, revealing the
+ * next card. Progress dots update automatically.
+ *
+ * Touch interaction:
+ *  - Drag left beyond 30% of card width → dismiss (animate out)
+ *  - Drag less than 30% → snap back
+ *  - No drag right (can't undo dismiss)
+ *
+ * The dismissed card count indicates reading progress — the doctor
+ * has "reviewed" each section of the report.
  *
  * Usage:
- *   <CardStack>
+ *   <CardStack onProgress={(index, total) => ...}>
  *     <ReportSection variant="scores" title="Wyniki">...</ReportSection>
  *     <ReportSection variant="tips" title="Na następny raz">...</ReportSection>
  *     <ReportSection variant="strength" title="Mocne strony">...</ReportSection>
- *     <ReportSection variant="improve" title="Do poprawy">...</ReportSection>
- *     <ReportSection variant="transcript" title="Transkrypcja">...</ReportSection>
  *   </CardStack>
  */
 interface CardStackProps {
-    /** Cards to stack (ReportSection components). */
     children: React.ReactNode;
-    /** Visual mode. */
-    mode?: "peek" | "single";
+    /** Called when active card changes (for tracking reading progress). */
+    onProgress?: (currentIndex: number, total: number) => void;
+    /** Brand accent for progress dots. */
+    brand?: "callflow" | "consultflow" | "shiftflow";
     className?: string;
 }
-declare function CardStack({ children, mode, className, }: CardStackProps): react_jsx_runtime.JSX.Element;
+declare function CardStack({ children, onProgress, brand, className, }: CardStackProps): react_jsx_runtime.JSX.Element;
 
 export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
