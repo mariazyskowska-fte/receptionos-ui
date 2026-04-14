@@ -1872,25 +1872,26 @@ function SidePanel({
     "aside",
     {
       className: cn(
-        "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)]",
+        "w-[384px] min-w-[384px] flex-shrink-0",
+        "sticky top-[80px] h-[calc(100vh-96px)]",
         "flex flex-col rounded-card border border-ros-border bg-ros-surface-off overflow-hidden",
         className
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-4 py-2.5 flex items-center justify-between", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[13px] leading-[18px] font-semibold text-ros-ink", children: teamTitle }),
-            teamCount != null && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Badge, { tone: "neutral", children: teamCount })
-          ] }) }),
-          teamToolbar && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-3 py-1.5 border-t border-ros-border/50", children: teamToolbar }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "overflow-y-auto px-2 py-1.5 flex flex-col gap-1 max-h-[45%]", children: teamContent })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col flex-[6] min-h-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-4 py-2.5 flex items-center gap-2 flex-shrink-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[13px] font-semibold text-ros-ink", children: teamTitle }),
+            teamCount != null && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-[11px] text-ros-ink-faint", children: teamCount })
+          ] }),
+          teamToolbar && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-3 py-1 flex-shrink-0", children: teamToolbar }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-1 overflow-y-auto px-2 py-1 flex flex-col gap-1", children: teamContent })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mx-3 border-t border-ros-ink-faint/20" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex-1 flex flex-col min-h-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-4 py-2.5", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[11px] leading-[14px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: feedTitle }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-1 overflow-y-auto px-2 pb-2 flex flex-col gap-0.5", children: feedContent })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mx-4 border-t border-ros-ink-faint/15 flex-shrink-0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col flex-[4] min-h-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-4 py-2 flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[10px] font-semibold text-ros-ink-faint uppercase tracking-widest", children: feedTitle }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-1 overflow-y-auto px-2 pb-1 flex flex-col", children: feedContent })
         ] }),
-        footer && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: footer })
+        footer && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "px-3 py-2 border-t border-ros-border bg-white flex-shrink-0", children: footer })
       ]
     }
   );
@@ -1902,11 +1903,9 @@ var dotColors = {
   gray: "bg-ros-ink-faint"
 };
 function SidePanelFeedRow({
-  icon,
   text,
-  detail,
   timestamp,
-  dotColor,
+  dotColor = "gray",
   onClick,
   className
 }) {
@@ -1914,20 +1913,17 @@ function SidePanelFeedRow({
     "div",
     {
       className: cn(
-        "flex items-start gap-2 px-2 py-1.5 rounded-input transition-colors duration-150",
-        onClick && "cursor-pointer hover:bg-white/60",
+        "flex items-center gap-2 px-2 py-1 rounded-sm",
+        onClick && "cursor-pointer hover:bg-white/50",
         className
       ),
       onClick,
       role: onClick ? "button" : void 0,
       tabIndex: onClick ? 0 : void 0,
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-shrink-0 mt-0.5", children: icon ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-[11px]", children: icon }) : dotColor ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: cn("inline-block size-1.5 rounded-pill mt-1", dotColors[dotColor]) }) : null }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[12px] leading-[16px] text-ros-ink truncate", children: text }),
-          detail && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[10px] leading-[14px] text-ros-ink-faint truncate", children: detail })
-        ] }),
-        timestamp && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-[10px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap mt-0.5", children: timestamp })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: cn("size-1.5 rounded-pill flex-shrink-0", dotColors[dotColor]) }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "flex-1 text-[11px] leading-[15px] text-ros-ink-muted truncate", children: text }),
+        timestamp && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-[10px] text-ros-ink-faint flex-shrink-0", children: timestamp })
       ]
     }
   );

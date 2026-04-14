@@ -922,59 +922,45 @@ interface ActivityLogProps {
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
 
 /**
- * SidePanel — right-side panel for the manager dashboard, combining
- * a team member list (top) and an activity feed (bottom) in a single
- * sticky column.
+ * SidePanel — right-side panel for the manager dashboard.
  *
- * Visual distinction from main content:
- *  - Slightly tinted background (surface-off) instead of white
- *  - The two sections have different inner backgrounds:
- *    team list = white cards, activity feed = transparent rows
- *  - Thin separator between sections
+ * Fixed height (fills viewport minus header). Two sections with
+ * fixed proportions: team list takes 60%, feed takes 40%.
+ * Both scroll independently within their allocated space.
  *
- * This replaces the raw `panel` slot in DashboardLayout with a
- * structured, opinionated component.
+ * Visual cues:
+ *  - Panel background: surface-off (subtle gray, distinct from main)
+ *  - Team rows: white card background (elevated from panel bg)
+ *  - Feed rows: no background, smaller text (secondary info)
+ *  - Permanent separator between sections
  *
- * Cross-app usage:
- *  - CallFlow:    team = recepcjonistki, feed = sent reports + read status
- *  - ConsultFlow: team = lekarze, feed = uploads + analysis status
- *  - ShiftFlow:   team = lekarze, feed = schedule changes + absence requests
+ * Design principle: comfort over density. Each element shows only
+ * the essential — name, one metric, one status indicator. No
+ * information overload.
  */
 interface SidePanelProps {
-    /** Team member list (top section). */
     teamContent: React.ReactNode;
     teamTitle?: string;
     teamCount?: number;
-    /** Toolbar above team list (select all, etc.). */
     teamToolbar?: React.ReactNode;
-    /** Activity feed (bottom section). */
     feedContent: React.ReactNode;
     feedTitle?: string;
-    /** Footer for bulk actions. */
     footer?: React.ReactNode;
     className?: string;
 }
 declare function SidePanel({ teamContent, teamTitle, teamCount, teamToolbar, feedContent, feedTitle, footer, className, }: SidePanelProps): react_jsx_runtime.JSX.Element;
 /**
- * SidePanelFeedRow — single row in the activity feed section.
- * Compact, no border, transparent background — visually distinct
- * from TeamMemberRow cards above.
+ * SidePanelFeedRow — minimal feed entry. Small text, no borders,
+ * just a dot + one line + timestamp. Reads like a log, not a card.
  */
 interface SidePanelFeedRowProps {
-    /** Icon or emoji. */
-    icon?: string;
-    /** Primary text. */
     text: string;
-    /** Secondary detail. */
-    detail?: string;
-    /** Timestamp. */
     timestamp?: string;
-    /** Status dot color. */
     dotColor?: "green" | "orange" | "red" | "gray";
     onClick?: () => void;
     className?: string;
 }
-declare function SidePanelFeedRow({ icon, text, detail, timestamp, dotColor, onClick, className, }: SidePanelFeedRowProps): react_jsx_runtime.JSX.Element;
+declare function SidePanelFeedRow({ text, timestamp, dotColor, onClick, className, }: SidePanelFeedRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * SwipeView — horizontal scroll-snap container for mobile-first

@@ -3,36 +3,30 @@ import { cn } from "../utils/cn";
 import { Badge } from "../primitives/Badge";
 
 /**
- * SidePanel — right-side panel for the manager dashboard, combining
- * a team member list (top) and an activity feed (bottom) in a single
- * sticky column.
+ * SidePanel — right-side panel for the manager dashboard.
  *
- * Visual distinction from main content:
- *  - Slightly tinted background (surface-off) instead of white
- *  - The two sections have different inner backgrounds:
- *    team list = white cards, activity feed = transparent rows
- *  - Thin separator between sections
+ * Fixed height (fills viewport minus header). Two sections with
+ * fixed proportions: team list takes 60%, feed takes 40%.
+ * Both scroll independently within their allocated space.
  *
- * This replaces the raw `panel` slot in DashboardLayout with a
- * structured, opinionated component.
+ * Visual cues:
+ *  - Panel background: surface-off (subtle gray, distinct from main)
+ *  - Team rows: white card background (elevated from panel bg)
+ *  - Feed rows: no background, smaller text (secondary info)
+ *  - Permanent separator between sections
  *
- * Cross-app usage:
- *  - CallFlow:    team = recepcjonistki, feed = sent reports + read status
- *  - ConsultFlow: team = lekarze, feed = uploads + analysis status
- *  - ShiftFlow:   team = lekarze, feed = schedule changes + absence requests
+ * Design principle: comfort over density. Each element shows only
+ * the essential — name, one metric, one status indicator. No
+ * information overload.
  */
 
 export interface SidePanelProps {
-  /** Team member list (top section). */
   teamContent: React.ReactNode;
   teamTitle?: string;
   teamCount?: number;
-  /** Toolbar above team list (select all, etc.). */
   teamToolbar?: React.ReactNode;
-  /** Activity feed (bottom section). */
   feedContent: React.ReactNode;
   feedTitle?: string;
-  /** Footer for bulk actions. */
   footer?: React.ReactNode;
   className?: string;
 }
@@ -50,58 +44,55 @@ export function SidePanel({
   return (
     <aside
       className={cn(
-        "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)]",
+        "w-[384px] min-w-[384px] flex-shrink-0",
+        "sticky top-[80px] h-[calc(100vh-96px)]",
         "flex flex-col rounded-card border border-ros-border bg-ros-surface-off overflow-hidden",
         className,
       )}
     >
-      {/* ── Team section (top) ── */}
-      <div className="flex flex-col">
-        {/* Team header */}
-        <div className="px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <p className="text-[13px] leading-[18px] font-semibold text-ros-ink">
-              {teamTitle}
-            </p>
-            {teamCount != null && (
-              <Badge tone="neutral">{teamCount}</Badge>
-            )}
-          </div>
+      {/* ── Team section (top, 60%) ── */}
+      <div className="flex flex-col flex-[6] min-h-0">
+        {/* Header */}
+        <div className="px-4 py-2.5 flex items-center gap-2 flex-shrink-0">
+          <p className="text-[13px] font-semibold text-ros-ink">{teamTitle}</p>
+          {teamCount != null && (
+            <span className="text-[11px] text-ros-ink-faint">{teamCount}</span>
+          )}
         </div>
 
         {/* Toolbar */}
         {teamToolbar && (
-          <div className="px-3 py-1.5 border-t border-ros-border/50">
+          <div className="px-3 py-1 flex-shrink-0">
             {teamToolbar}
           </div>
         )}
 
-        {/* Team list — scrollable, white card background per row */}
-        <div className="overflow-y-auto px-2 py-1.5 flex flex-col gap-1 max-h-[45%]">
+        {/* Team list — scrollable */}
+        <div className="flex-1 overflow-y-auto px-2 py-1 flex flex-col gap-1">
           {teamContent}
         </div>
       </div>
 
-      {/* ── Separator ── */}
-      <div className="mx-3 border-t border-ros-ink-faint/20" />
+      {/* ── Fixed separator ── */}
+      <div className="mx-4 border-t border-ros-ink-faint/15 flex-shrink-0" />
 
-      {/* ── Feed section (bottom) ── */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="px-4 py-2.5">
-          <p className="text-[11px] leading-[14px] font-semibold text-ros-ink-muted uppercase tracking-wide">
+      {/* ── Feed section (bottom, 40%) ── */}
+      <div className="flex flex-col flex-[4] min-h-0">
+        <div className="px-4 py-2 flex-shrink-0">
+          <p className="text-[10px] font-semibold text-ros-ink-faint uppercase tracking-widest">
             {feedTitle}
           </p>
         </div>
 
-        {/* Feed rows — transparent background, compact */}
-        <div className="flex-1 overflow-y-auto px-2 pb-2 flex flex-col gap-0.5">
+        {/* Feed rows — scrollable */}
+        <div className="flex-1 overflow-y-auto px-2 pb-1 flex flex-col">
           {feedContent}
         </div>
       </div>
 
-      {/* ── Footer (bulk actions) ── */}
+      {/* ── Footer ── */}
       {footer && (
-        <div className="px-3 py-2.5 border-t border-ros-border bg-white">
+        <div className="px-3 py-2 border-t border-ros-border bg-white flex-shrink-0">
           {footer}
         </div>
       )}
@@ -110,20 +101,12 @@ export function SidePanel({
 }
 
 /**
- * SidePanelFeedRow — single row in the activity feed section.
- * Compact, no border, transparent background — visually distinct
- * from TeamMemberRow cards above.
+ * SidePanelFeedRow — minimal feed entry. Small text, no borders,
+ * just a dot + one line + timestamp. Reads like a log, not a card.
  */
 export interface SidePanelFeedRowProps {
-  /** Icon or emoji. */
-  icon?: string;
-  /** Primary text. */
   text: string;
-  /** Secondary detail. */
-  detail?: string;
-  /** Timestamp. */
   timestamp?: string;
-  /** Status dot color. */
   dotColor?: "green" | "orange" | "red" | "gray";
   onClick?: () => void;
   className?: string;
@@ -137,47 +120,27 @@ const dotColors: Record<NonNullable<SidePanelFeedRowProps["dotColor"]>, string> 
 };
 
 export function SidePanelFeedRow({
-  icon,
   text,
-  detail,
   timestamp,
-  dotColor,
+  dotColor = "gray",
   onClick,
   className,
 }: SidePanelFeedRowProps) {
   return (
     <div
       className={cn(
-        "flex items-start gap-2 px-2 py-1.5 rounded-input transition-colors duration-150",
-        onClick && "cursor-pointer hover:bg-white/60",
+        "flex items-center gap-2 px-2 py-1 rounded-sm",
+        onClick && "cursor-pointer hover:bg-white/50",
         className,
       )}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      {/* Icon or dot */}
-      <div className="flex-shrink-0 mt-0.5">
-        {icon ? (
-          <span className="text-[11px]">{icon}</span>
-        ) : dotColor ? (
-          <span className={cn("inline-block size-1.5 rounded-pill mt-1", dotColors[dotColor])} />
-        ) : null}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-[12px] leading-[16px] text-ros-ink truncate">{text}</p>
-        {detail && (
-          <p className="text-[10px] leading-[14px] text-ros-ink-faint truncate">{detail}</p>
-        )}
-      </div>
-
-      {/* Timestamp */}
+      <span className={cn("size-1.5 rounded-pill flex-shrink-0", dotColors[dotColor])} />
+      <p className="flex-1 text-[11px] leading-[15px] text-ros-ink-muted truncate">{text}</p>
       {timestamp && (
-        <span className="text-[10px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap mt-0.5">
-          {timestamp}
-        </span>
+        <span className="text-[10px] text-ros-ink-faint flex-shrink-0">{timestamp}</span>
       )}
     </div>
   );
