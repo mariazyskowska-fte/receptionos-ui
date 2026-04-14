@@ -265,6 +265,9 @@ function ProfileForm({
   );
 }
 
+// src/patterns/TrendChart.tsx
+import * as React5 from "react";
+
 // src/tokens/index.ts
 var tokens_exports = {};
 __export(tokens_exports, {
@@ -311,14 +314,23 @@ function TrendChart({
   brand = "callflow",
   title,
   data,
+  series,
   benchmark,
   annotations,
   minPoints = 5,
   insufficientDataMessage,
   className
 }) {
-  const stroke = brandColors[brand];
-  if (data.length < minPoints) {
+  const allSeries = React5.useMemo(() => {
+    if (series && series.length > 0) return series;
+    if (data && data.length > 0) {
+      return [{ name: title, color: brandColors[brand], data }];
+    }
+    return [];
+  }, [series, data, brand, title]);
+  const primaryData = allSeries[0]?.data ?? [];
+  const isMulti = allSeries.length > 1;
+  if (primaryData.length < minPoints) {
     return /* @__PURE__ */ jsxs4(
       "div",
       {
@@ -331,7 +343,7 @@ function TrendChart({
           /* @__PURE__ */ jsx7("p", { className: "text-[14px] font-medium text-ros-ink", children: title }),
           /* @__PURE__ */ jsx7("p", { className: "text-[12px] text-ros-ink-muted", children: insufficientDataMessage ?? `Trend b\u0119dzie widoczny po co najmniej ${minPoints} analizach` }),
           /* @__PURE__ */ jsxs4("p", { className: "text-[12px] text-ros-ink-faint", children: [
-            data.length,
+            primaryData.length,
             " z ",
             minPoints,
             " rejestracji"
@@ -343,13 +355,17 @@ function TrendChart({
   const W = 480;
   const H = 160;
   const PAD = 24;
-  const all = [...data, ...benchmark ?? []];
-  const min = Math.min(...all.map((p) => p.value));
-  const max = Math.max(...all.map((p) => p.value));
+  const allPoints = [
+    ...allSeries.flatMap((s) => s.data),
+    ...benchmark ?? []
+  ];
+  const min = Math.min(...allPoints.map((p) => p.value));
+  const max = Math.max(...allPoints.map((p) => p.value));
   const range = max - min || 1;
-  const x = (i, len) => PAD + i * (W - PAD * 2) / Math.max(len - 1, 1);
+  const maxLen = Math.max(...allSeries.map((s) => s.data.length), benchmark?.length ?? 0);
+  const x = (i) => PAD + i * (W - PAD * 2) / Math.max(maxLen - 1, 1);
   const y = (v) => H - PAD - (v - min) / range * (H - PAD * 2);
-  const path = (series) => series.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i, series.length)} ${y(p.value)}`).join(" ");
+  const pathD = (points) => points.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.value)}`).join(" ");
   return /* @__PURE__ */ jsxs4(
     "div",
     {
@@ -359,26 +375,59 @@ function TrendChart({
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs4("div", { className: "flex items-baseline justify-between", children: [
+        /* @__PURE__ */ jsxs4("div", { className: "flex items-start justify-between gap-3", children: [
           /* @__PURE__ */ jsx7("p", { className: "text-[14px] font-medium text-ros-ink", children: title }),
-          benchmark && /* @__PURE__ */ jsx7("span", { className: "text-[12px] text-ros-ink-muted", children: "\u2500\u2500 benchmark zespo\u0142u (anonimowy)" })
+          isMulti && /* @__PURE__ */ jsx7("div", { className: "flex flex-wrap gap-x-3 gap-y-1", children: allSeries.map((s) => /* @__PURE__ */ jsxs4("div", { className: "flex items-center gap-1.5", children: [
+            /* @__PURE__ */ jsx7(
+              "span",
+              {
+                className: "inline-block w-3 h-[2px] rounded-pill flex-shrink-0",
+                style: {
+                  backgroundColor: s.color,
+                  ...s.dashed ? { backgroundImage: `repeating-linear-gradient(90deg, ${s.color} 0 4px, transparent 4px 8px)`, backgroundColor: "transparent" } : {}
+                }
+              }
+            ),
+            /* @__PURE__ */ jsx7("span", { className: "text-[11px] text-ros-ink-muted", children: s.name })
+          ] }, s.name)) }),
+          !isMulti && benchmark && /* @__PURE__ */ jsx7("span", { className: "text-[12px] text-ros-ink-muted", children: "\u2500\u2500 benchmark (anonimowy)" })
         ] }),
         /* @__PURE__ */ jsxs4("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full h-auto", children: [
-          benchmark && /* @__PURE__ */ jsx7(
+          !isMulti && benchmark && /* @__PURE__ */ jsx7(
             "path",
             {
-              d: path(benchmark),
+              d: pathD(benchmark),
               fill: "none",
               stroke: palette.inkFaint,
               strokeWidth: 1.5,
               strokeDasharray: "4 4"
             }
           ),
-          /* @__PURE__ */ jsx7("path", { d: path(data), fill: "none", stroke, strokeWidth: 2 }),
-          data.map((p, i) => /* @__PURE__ */ jsx7("circle", { cx: x(i, data.length), cy: y(p.value), r: 3, fill: stroke }, i)),
+          allSeries.map((s) => /* @__PURE__ */ jsxs4("g", { children: [
+            /* @__PURE__ */ jsx7(
+              "path",
+              {
+                d: pathD(s.data),
+                fill: "none",
+                stroke: s.color,
+                strokeWidth: isMulti ? 1.5 : 2,
+                strokeDasharray: s.dashed ? "4 4" : void 0
+              }
+            ),
+            !isMulti && s.data.map((p, i) => /* @__PURE__ */ jsx7(
+              "circle",
+              {
+                cx: x(i),
+                cy: y(p.value),
+                r: 3,
+                fill: s.color
+              },
+              i
+            ))
+          ] }, s.name)),
           annotations?.map((a, i) => {
-            if (a.atIndex < 0 || a.atIndex >= data.length) return null;
-            const cx = x(a.atIndex, data.length);
+            if (a.atIndex < 0 || a.atIndex >= maxLen) return null;
+            const cx = x(a.atIndex);
             return /* @__PURE__ */ jsxs4("g", { children: [
               /* @__PURE__ */ jsx7(
                 "line",
@@ -616,7 +665,7 @@ function TeamMemberRow({
 }
 
 // src/patterns/AppHeader.tsx
-import * as React5 from "react";
+import * as React6 from "react";
 import { jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
 var brandBg2 = {
   callflow: "bg-brand-callflow",
@@ -638,9 +687,9 @@ function AppHeader({
   actions,
   className
 }) {
-  const [userMenuOpen, setUserMenuOpen] = React5.useState(false);
-  const menuRef = React5.useRef(null);
-  React5.useEffect(() => {
+  const [userMenuOpen, setUserMenuOpen] = React6.useState(false);
+  const menuRef = React6.useRef(null);
+  React6.useEffect(() => {
     if (!userMenuOpen) return;
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -794,7 +843,7 @@ function PageHeading({
 }
 
 // src/patterns/ImportDropZone.tsx
-import * as React6 from "react";
+import * as React7 from "react";
 import { jsx as jsx13, jsxs as jsxs10 } from "react/jsx-runtime";
 var brandAccent2 = {
   callflow: "border-brand-callflow/30 bg-blue-50/30",
@@ -829,8 +878,8 @@ function ImportDropZone({
   children,
   className
 }) {
-  const inputRef = React6.useRef(null);
-  const [dragOver, setDragOver] = React6.useState(false);
+  const inputRef = React7.useRef(null);
+  const [dragOver, setDragOver] = React7.useState(false);
   function handleDrop(e) {
     e.preventDefault();
     setDragOver(false);
@@ -1180,7 +1229,7 @@ function ImportActivityRow({
 }
 
 // src/patterns/TeamHeatmap.tsx
-import * as React7 from "react";
+import * as React8 from "react";
 import { jsx as jsx17, jsxs as jsxs14 } from "react/jsx-runtime";
 function scoreTone(score) {
   if (score >= 75) return "success";
@@ -1208,7 +1257,7 @@ function TeamHeatmap({
   onWeakestAreaClick,
   className
 }) {
-  const areaAverages = React7.useMemo(() => {
+  const areaAverages = React8.useMemo(() => {
     return areas.map((area) => {
       const scores = members.map((m) => m.scores[area]).filter((s) => s != null && s > 0);
       if (scores.length === 0) return { area, avg: 0, count: 0 };
@@ -1216,7 +1265,7 @@ function TeamHeatmap({
       return { area, avg, count: scores.length };
     });
   }, [areas, members]);
-  const weakest = React7.useMemo(() => {
+  const weakest = React8.useMemo(() => {
     const scored = areaAverages.filter((a) => a.count > 0);
     if (scored.length === 0) return null;
     return scored.reduce((min, a) => a.avg < min.avg ? a : min, scored[0]);
@@ -1298,7 +1347,7 @@ function TeamHeatmap({
 }
 
 // src/patterns/ReportBreakdown.tsx
-import * as React8 from "react";
+import * as React9 from "react";
 import { jsx as jsx18, jsxs as jsxs15 } from "react/jsx-runtime";
 function scoreTone2(score) {
   if (score >= 75) return "success";
@@ -1325,7 +1374,7 @@ function ReportBreakdown({
   maxSuggestions = 3,
   className
 }) {
-  const weakestArea = React8.useMemo(() => {
+  const weakestArea = React9.useMemo(() => {
     if (areas.length === 0) return null;
     return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
   }, [areas]);
@@ -1574,7 +1623,7 @@ function ScoreCardRow({
 }
 
 // src/patterns/PerformanceOverview.tsx
-import * as React9 from "react";
+import * as React10 from "react";
 import { jsx as jsx21, jsxs as jsxs18 } from "react/jsx-runtime";
 function barColor3(score) {
   if (score >= 75) return "bg-ros-success-fg";
@@ -1616,7 +1665,7 @@ function PerformanceOverview({
   className
 }) {
   const shouldShowSummary = showSummary ?? mode === "aggregate";
-  const weakest = React9.useMemo(() => {
+  const weakest = React10.useMemo(() => {
     if (areas.length === 0) return null;
     return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
   }, [areas]);
@@ -1752,7 +1801,7 @@ function TeamPanelFooter({
 }
 
 // src/patterns/ActivityLog.tsx
-import * as React10 from "react";
+import * as React11 from "react";
 import { jsx as jsx23, jsxs as jsxs20 } from "react/jsx-runtime";
 var typeToDot = {
   report_sent: "green",
@@ -1771,7 +1820,7 @@ function ActivityLog({
   maxVisible = 10,
   className
 }) {
-  const [expanded, setExpanded] = React10.useState(false);
+  const [expanded, setExpanded] = React11.useState(false);
   const visible = maxVisible > 0 && !expanded ? entries.slice(0, maxVisible) : entries;
   const hasMore = maxVisible > 0 && entries.length > maxVisible;
   if (entries.length === 0) {
@@ -1852,7 +1901,7 @@ function SidePanel({
 }
 
 // src/patterns/SwipeView.tsx
-import * as React11 from "react";
+import * as React12 from "react";
 import { jsx as jsx25, jsxs as jsxs22 } from "react/jsx-runtime";
 var brandDot = {
   callflow: "bg-brand-callflow",
@@ -1866,15 +1915,15 @@ function SwipeView({
   brand = "callflow",
   className
 }) {
-  const scrollRef = React11.useRef(null);
-  const [activeIndex, setActiveIndex] = React11.useState(initialPage);
-  React11.useEffect(() => {
+  const scrollRef = React12.useRef(null);
+  const [activeIndex, setActiveIndex] = React12.useState(initialPage);
+  React12.useEffect(() => {
     if (scrollRef.current && initialPage > 0) {
       const width = scrollRef.current.offsetWidth;
       scrollRef.current.scrollLeft = width * initialPage;
     }
   }, []);
-  React11.useEffect(() => {
+  React12.useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     let ticking = false;
@@ -2102,7 +2151,7 @@ function ReportSection({
 }
 
 // src/patterns/CardStack.tsx
-import * as React12 from "react";
+import * as React13 from "react";
 import { jsx as jsx28, jsxs as jsxs25 } from "react/jsx-runtime";
 var brandBg5 = {
   callflow: "bg-brand-callflow",
@@ -2115,14 +2164,14 @@ function CardStack({
   brand = "callflow",
   className
 }) {
-  const cards = React12.Children.toArray(children);
+  const cards = React13.Children.toArray(children);
   const total = cards.length;
-  const [activeIndex, setActiveIndex] = React12.useState(0);
-  const [dragX, setDragX] = React12.useState(0);
-  const [isDragging, setIsDragging] = React12.useState(false);
-  const [animating, setAnimating] = React12.useState(false);
-  const startX = React12.useRef(0);
-  const containerRef = React12.useRef(null);
+  const [activeIndex, setActiveIndex] = React13.useState(0);
+  const [dragX, setDragX] = React13.useState(0);
+  const [isDragging, setIsDragging] = React13.useState(false);
+  const [animating, setAnimating] = React13.useState(false);
+  const startX = React13.useRef(0);
+  const containerRef = React13.useRef(null);
   function handleStart(clientX) {
     if (animating) return;
     startX.current = clientX;
@@ -2221,7 +2270,7 @@ function CardStack({
 }
 
 // src/patterns/TranscriptDrawer.tsx
-import * as React13 from "react";
+import * as React14 from "react";
 import { jsx as jsx29, jsxs as jsxs26 } from "react/jsx-runtime";
 function TranscriptDrawer({
   content,
@@ -2229,10 +2278,10 @@ function TranscriptDrawer({
   label = "Transkrypcja",
   className
 }) {
-  const [expanded, setExpanded] = React13.useState(false);
-  const [dragY, setDragY] = React13.useState(0);
-  const [isDragging, setIsDragging] = React13.useState(false);
-  const startY = React13.useRef(0);
+  const [expanded, setExpanded] = React14.useState(false);
+  const [dragY, setDragY] = React14.useState(0);
+  const [isDragging, setIsDragging] = React14.useState(false);
+  const startY = React14.useRef(0);
   if (!content) return null;
   function handleStart(clientY) {
     startY.current = clientY;
@@ -2322,7 +2371,7 @@ function TranscriptDrawer({
 }
 
 // src/patterns/SetupFlow.tsx
-import * as React14 from "react";
+import * as React15 from "react";
 import { jsx as jsx30, jsxs as jsxs27 } from "react/jsx-runtime";
 var brandBg6 = {
   callflow: "bg-brand-callflow",
@@ -2337,7 +2386,7 @@ function SetupFlow({
   brand = "callflow",
   className
 }) {
-  const [activeIndex, setActiveIndex] = React14.useState(0);
+  const [activeIndex, setActiveIndex] = React15.useState(0);
   const total = steps.length;
   const current = steps[activeIndex];
   const isLast = activeIndex >= total - 1;

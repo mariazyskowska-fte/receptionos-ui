@@ -146,37 +146,35 @@ interface ProfileFormProps {
 declare function ProfileForm({ value, onChange, onSubmit, onCancel, extraFieldLabel, brand, className, }: ProfileFormProps): react_jsx_runtime.JSX.Element;
 
 /**
- * TrendChart — line chart for tracking a single metric over time, with
- * optional event annotations and "insufficient data" empty state.
+ * TrendChart — line chart for tracking metrics over time.
+ *
+ * Supports two modes:
+ * 1. Single line: `data` prop (backward compatible)
+ * 2. Multi-line: `series` prop — multiple named lines on one chart
+ *    with color-coded legend, for comparing areas side by side.
  *
  * Source user stories:
- *  - CallFlow:    US-CF-03 sc.1 — Empathy Score, 30 dni, adnotacja
- *                 "Wzrost o [X] pkt po zastosowaniu sugestii z dnia [data]"
- *                 + sc.2 empty state "Trend będzie widoczny po co najmniej
- *                 5 analizach" / "2 z 5 rozmów zarejestrowanych"
- *  - ConsultFlow: US-CO-03 sc.1 — Overall Score, 6 tygodni; sc.2
- *                 ostrzeżenie regresji (odcinek wyróżniony pomarańczowy);
- *                 sc.3 anonimowy benchmark zespołu
- *  - ShiftFlow:   US-SF-05 sc.1 — utilizacja w czasie (manager dashboard)
+ *  - CallFlow:    US-CF-03 sc.1 — Empathy Score trend
+ *  - ConsultFlow: US-CO-03 sc.1 — Overall Score + area breakdown lines
+ *  - ShiftFlow:   US-SF-05 sc.1 — chair utilization trend
  *
- * Role variants:
- *  - operator: shows ONLY their own series. Annotations describe their
- *    own actions ("po wdrożeniu sugestii z dnia X"). Optional anonymized
- *    benchmark line, never identifying others (gherkin US-CO-03 sc.3).
- *  - manager: shows aggregate (team average). Annotations describe team
- *    events like "szkolenie z Obsługa obiekcji" (US-CO-05 sc.4).
- *
- * The component is intentionally pure SVG with no chart-lib dependency,
- * because R1 plan says: paczka musi działać jako zwykła paczka npm bez
- * przepisywania backendu (cytat z planu R1+R2 / Krok 3).
+ * Pure SVG, no chart-lib dependency.
  */
 interface TrendPoint {
-    /** Display label, e.g. "1 mar" or "Tydz. 12". */
     label: string;
     value: number;
 }
+interface TrendSeries {
+    /** Series name shown in legend. */
+    name: string;
+    /** Line color (hex). */
+    color: string;
+    /** Data points — must share the same labels/x-axis as other series. */
+    data: TrendPoint[];
+    /** Dashed line style (for benchmarks). */
+    dashed?: boolean;
+}
 interface TrendAnnotation {
-    /** Index into `data` to anchor the annotation marker. */
     atIndex: number;
     text: string;
 }
@@ -184,19 +182,18 @@ interface TrendChartProps {
     variant?: "operator" | "manager";
     brand?: "callflow" | "consultflow" | "shiftflow";
     title: string;
-    data: TrendPoint[];
-    /** Anonymized benchmark line (US-CO-03 sc.3). Manager dashboards may
-     *  also use this to show "before training" baseline. */
+    /** Single line mode (backward compatible). */
+    data?: TrendPoint[];
+    /** Multi-line mode — multiple series on one chart. */
+    series?: TrendSeries[];
+    /** Benchmark line (single-line mode only). */
     benchmark?: TrendPoint[];
     annotations?: TrendAnnotation[];
-    /** Minimum number of points required before the chart is rendered.
-     *  Below this, an "insufficient data" message replaces the chart
-     *  (US-CF-03 sc.2). */
     minPoints?: number;
     insufficientDataMessage?: string;
     className?: string;
 }
-declare function TrendChart({ variant, brand, title, data, benchmark, annotations, minPoints, insufficientDataMessage, className, }: TrendChartProps): react_jsx_runtime.JSX.Element;
+declare function TrendChart({ variant, brand, title, data, series, benchmark, annotations, minPoints, insufficientDataMessage, className, }: TrendChartProps): react_jsx_runtime.JSX.Element;
 
 /**
  * DashboardHeader — top hero of every Manager Dashboard. Single big metric
@@ -1143,4 +1140,4 @@ interface SetupFlowProps {
 }
 declare function SetupFlow({ steps, onComplete, completeLabel, onCancel, brand, className, }: SetupFlowProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };

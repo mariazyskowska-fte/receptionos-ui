@@ -9,6 +9,7 @@ export {
   TrendChart,
   type TrendChartProps,
   type TrendPoint,
+  type TrendSeries,
   type TrendAnnotation,
 } from "./TrendChart";
 export { DashboardHeader, type DashboardHeaderProps } from "./DashboardHeader";

@@ -3,38 +3,38 @@ import { cn } from "../utils/cn";
 import { brandColors, palette } from "../tokens";
 
 /**
- * TrendChart — line chart for tracking a single metric over time, with
- * optional event annotations and "insufficient data" empty state.
+ * TrendChart — line chart for tracking metrics over time.
+ *
+ * Supports two modes:
+ * 1. Single line: `data` prop (backward compatible)
+ * 2. Multi-line: `series` prop — multiple named lines on one chart
+ *    with color-coded legend, for comparing areas side by side.
  *
  * Source user stories:
- *  - CallFlow:    US-CF-03 sc.1 — Empathy Score, 30 dni, adnotacja
- *                 "Wzrost o [X] pkt po zastosowaniu sugestii z dnia [data]"
- *                 + sc.2 empty state "Trend będzie widoczny po co najmniej
- *                 5 analizach" / "2 z 5 rozmów zarejestrowanych"
- *  - ConsultFlow: US-CO-03 sc.1 — Overall Score, 6 tygodni; sc.2
- *                 ostrzeżenie regresji (odcinek wyróżniony pomarańczowy);
- *                 sc.3 anonimowy benchmark zespołu
- *  - ShiftFlow:   US-SF-05 sc.1 — utilizacja w czasie (manager dashboard)
+ *  - CallFlow:    US-CF-03 sc.1 — Empathy Score trend
+ *  - ConsultFlow: US-CO-03 sc.1 — Overall Score + area breakdown lines
+ *  - ShiftFlow:   US-SF-05 sc.1 — chair utilization trend
  *
- * Role variants:
- *  - operator: shows ONLY their own series. Annotations describe their
- *    own actions ("po wdrożeniu sugestii z dnia X"). Optional anonymized
- *    benchmark line, never identifying others (gherkin US-CO-03 sc.3).
- *  - manager: shows aggregate (team average). Annotations describe team
- *    events like "szkolenie z Obsługa obiekcji" (US-CO-05 sc.4).
- *
- * The component is intentionally pure SVG with no chart-lib dependency,
- * because R1 plan says: paczka musi działać jako zwykła paczka npm bez
- * przepisywania backendu (cytat z planu R1+R2 / Krok 3).
+ * Pure SVG, no chart-lib dependency.
  */
+
 export interface TrendPoint {
-  /** Display label, e.g. "1 mar" or "Tydz. 12". */
   label: string;
   value: number;
 }
 
+export interface TrendSeries {
+  /** Series name shown in legend. */
+  name: string;
+  /** Line color (hex). */
+  color: string;
+  /** Data points — must share the same labels/x-axis as other series. */
+  data: TrendPoint[];
+  /** Dashed line style (for benchmarks). */
+  dashed?: boolean;
+}
+
 export interface TrendAnnotation {
-  /** Index into `data` to anchor the annotation marker. */
   atIndex: number;
   text: string;
 }
@@ -43,33 +43,47 @@ export interface TrendChartProps {
   variant?: "operator" | "manager";
   brand?: "callflow" | "consultflow" | "shiftflow";
   title: string;
-  data: TrendPoint[];
-  /** Anonymized benchmark line (US-CO-03 sc.3). Manager dashboards may
-   *  also use this to show "before training" baseline. */
+  /** Single line mode (backward compatible). */
+  data?: TrendPoint[];
+  /** Multi-line mode — multiple series on one chart. */
+  series?: TrendSeries[];
+  /** Benchmark line (single-line mode only). */
   benchmark?: TrendPoint[];
   annotations?: TrendAnnotation[];
-  /** Minimum number of points required before the chart is rendered.
-   *  Below this, an "insufficient data" message replaces the chart
-   *  (US-CF-03 sc.2). */
   minPoints?: number;
   insufficientDataMessage?: string;
   className?: string;
 }
+
+const SERIES_COLORS = [
+  "#2563eb", "#7c3aed", "#16a34a", "#ea580c", "#e11d48", "#0ea5e9",
+];
 
 export function TrendChart({
   variant = "operator",
   brand = "callflow",
   title,
   data,
+  series,
   benchmark,
   annotations,
   minPoints = 5,
   insufficientDataMessage,
   className,
 }: TrendChartProps) {
-  const stroke = brandColors[brand];
+  // Normalize to series format
+  const allSeries: TrendSeries[] = React.useMemo(() => {
+    if (series && series.length > 0) return series;
+    if (data && data.length > 0) {
+      return [{ name: title, color: brandColors[brand], data }];
+    }
+    return [];
+  }, [series, data, brand, title]);
 
-  if (data.length < minPoints) {
+  const primaryData = allSeries[0]?.data ?? [];
+  const isMulti = allSeries.length > 1;
+
+  if (primaryData.length < minPoints) {
     return (
       <div
         data-variant={variant}
@@ -84,7 +98,7 @@ export function TrendChart({
             `Trend będzie widoczny po co najmniej ${minPoints} analizach`}
         </p>
         <p className="text-[12px] text-ros-ink-faint">
-          {data.length} z {minPoints} rejestracji
+          {primaryData.length} z {minPoints} rejestracji
         </p>
       </div>
     );
@@ -94,18 +108,23 @@ export function TrendChart({
   const H = 160;
   const PAD = 24;
 
-  const all = [...data, ...(benchmark ?? [])];
-  const min = Math.min(...all.map((p) => p.value));
-  const max = Math.max(...all.map((p) => p.value));
+  // Compute global min/max across all series + benchmark
+  const allPoints = [
+    ...allSeries.flatMap((s) => s.data),
+    ...(benchmark ?? []),
+  ];
+  const min = Math.min(...allPoints.map((p) => p.value));
+  const max = Math.max(...allPoints.map((p) => p.value));
   const range = max - min || 1;
 
-  const x = (i: number, len: number) =>
-    PAD + (i * (W - PAD * 2)) / Math.max(len - 1, 1);
+  const maxLen = Math.max(...allSeries.map((s) => s.data.length), benchmark?.length ?? 0);
+
+  const x = (i: number) => PAD + (i * (W - PAD * 2)) / Math.max(maxLen - 1, 1);
   const y = (v: number) => H - PAD - ((v - min) / range) * (H - PAD * 2);
 
-  const path = (series: TrendPoint[]) =>
-    series
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${x(i, series.length)} ${y(p.value)}`)
+  const pathD = (points: TrendPoint[]) =>
+    points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.value)}`)
       .join(" ");
 
   return (
@@ -116,31 +135,73 @@ export function TrendChart({
         className,
       )}
     >
-      <div className="flex items-baseline justify-between">
+      {/* Header + legend */}
+      <div className="flex items-start justify-between gap-3">
         <p className="text-[14px] font-medium text-ros-ink">{title}</p>
-        {benchmark && (
+        {isMulti && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {allSeries.map((s) => (
+              <div key={s.name} className="flex items-center gap-1.5">
+                <span
+                  className="inline-block w-3 h-[2px] rounded-pill flex-shrink-0"
+                  style={{
+                    backgroundColor: s.color,
+                    ...(s.dashed ? { backgroundImage: `repeating-linear-gradient(90deg, ${s.color} 0 4px, transparent 4px 8px)`, backgroundColor: "transparent" } : {}),
+                  }}
+                />
+                <span className="text-[11px] text-ros-ink-muted">{s.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {!isMulti && benchmark && (
           <span className="text-[12px] text-ros-ink-muted">
-            ── benchmark zespołu (anonimowy)
+            ── benchmark (anonimowy)
           </span>
         )}
       </div>
+
+      {/* SVG chart */}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
-        {benchmark && (
+        {/* Benchmark (single-line mode) */}
+        {!isMulti && benchmark && (
           <path
-            d={path(benchmark)}
+            d={pathD(benchmark)}
             fill="none"
             stroke={palette.inkFaint}
             strokeWidth={1.5}
             strokeDasharray="4 4"
           />
         )}
-        <path d={path(data)} fill="none" stroke={stroke} strokeWidth={2} />
-        {data.map((p, i) => (
-          <circle key={i} cx={x(i, data.length)} cy={y(p.value)} r={3} fill={stroke} />
+
+        {/* Series lines */}
+        {allSeries.map((s) => (
+          <g key={s.name}>
+            <path
+              d={pathD(s.data)}
+              fill="none"
+              stroke={s.color}
+              strokeWidth={isMulti ? 1.5 : 2}
+              strokeDasharray={s.dashed ? "4 4" : undefined}
+            />
+            {/* Dots only for single-line or on hover area */}
+            {!isMulti &&
+              s.data.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={x(i)}
+                  cy={y(p.value)}
+                  r={3}
+                  fill={s.color}
+                />
+              ))}
+          </g>
         ))}
+
+        {/* Annotations */}
         {annotations?.map((a, i) => {
-          if (a.atIndex < 0 || a.atIndex >= data.length) return null;
-          const cx = x(a.atIndex, data.length);
+          if (a.atIndex < 0 || a.atIndex >= maxLen) return null;
+          const cx = x(a.atIndex);
           return (
             <g key={i}>
               <line
@@ -156,6 +217,8 @@ export function TrendChart({
           );
         })}
       </svg>
+
+      {/* Annotation text */}
       {annotations?.map((a, i) => (
         <p key={i} className="text-[12px] text-ros-ink-muted">
           ⚑ {a.text}
