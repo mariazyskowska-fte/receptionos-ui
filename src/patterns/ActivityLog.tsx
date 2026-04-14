@@ -1,19 +1,13 @@
 import * as React from "react";
 import { cn } from "../utils/cn";
-import { Badge } from "../primitives/Badge";
+import { FeedRow, type FeedDotColor } from "./FeedRow";
 
 /**
- * ActivityLog — chronological timeline of events for a team member,
- * shown inside MemberDetailView.
+ * ActivityLog — chronological timeline of events, shown inside
+ * MemberDetailView or as a standalone history section.
  *
- * Cross-app usage:
- *  - ShiftFlow: schedule deliveries, AI suggestions, days off requests
- *    (US-SF-02 sc.1 "grafik gotowy", US-SF-03 sc.1 "zgłasza nieobecność",
- *     US-SF-03 sc.2 "zaktualizował preferencje")
- *  - CallFlow: report generations, feedback given, coaching sessions
- *    (US-CF-02 sc.1 "raport gotowy", US-CF-04 sc.2 "omówiona")
- *  - ConsultFlow: consultation uploads, report deliveries, coaching notes
- *    (US-CO-02 sc.1 "raport gotowy", US-CO-05 sc.3 "notatka coachingowa")
+ * Uses FeedRow internally for each entry. This component adds
+ * the card wrapper, header, and expand/collapse logic.
  */
 
 export type ActivityType =
@@ -30,37 +24,30 @@ export type ActivityType =
 
 export interface ActivityEntry {
   type: ActivityType;
-  /** Short description, e.g. "Wysłano grafik na tydzień 14–18 kwi". */
   text: string;
-  /** ISO timestamp or display string. */
   timestamp: string;
-  /** Optional extra detail shown below the text. */
   detail?: string;
-  /** Custom icon label override. */
+  /** @deprecated Use FeedRow directly if you need custom icons. */
   iconLabel?: string;
 }
 
 export interface ActivityLogProps {
   entries: ActivityEntry[];
-  /** Max entries to show before "Pokaż więcej". 0 = show all. */
   maxVisible?: number;
   className?: string;
 }
 
-const typeConfig: Record<
-  ActivityType,
-  { icon: string; tone: "success" | "warn" | "danger" | "neutral" }
-> = {
-  report_sent: { icon: "📄", tone: "success" },
-  report_viewed: { icon: "👁", tone: "success" },
-  schedule_sent: { icon: "📅", tone: "success" },
-  schedule_confirmed: { icon: "✓", tone: "success" },
-  absence: { icon: "✕", tone: "danger" },
-  preference_change: { icon: "⚙", tone: "neutral" },
-  coaching_note: { icon: "✎", tone: "neutral" },
-  suggestion: { icon: "💡", tone: "warn" },
-  feedback: { icon: "↩", tone: "neutral" },
-  custom: { icon: "•", tone: "neutral" },
+const typeToDot: Record<ActivityType, FeedDotColor> = {
+  report_sent: "green",
+  report_viewed: "green",
+  schedule_sent: "green",
+  schedule_confirmed: "green",
+  absence: "red",
+  preference_change: "gray",
+  coaching_note: "gray",
+  suggestion: "orange",
+  feedback: "blue",
+  custom: "gray",
 };
 
 export function ActivityLog({
@@ -97,44 +84,16 @@ export function ActivityLog({
         </p>
       </div>
 
-      <div className="flex flex-col">
-        {visible.map((entry, i) => {
-          const cfg = typeConfig[entry.type];
-          const isLast = i === visible.length - 1;
-          return (
-            <div
-              key={i}
-              className={cn(
-                "flex gap-3 px-4 py-2.5",
-                !isLast && "border-b border-ros-border",
-              )}
-            >
-              {/* Timeline dot */}
-              <div className="flex flex-col items-center pt-0.5 flex-shrink-0">
-                <span className="text-[12px] leading-none">
-                  {entry.iconLabel ?? cfg.icon}
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-[13px] leading-[18px] text-ros-ink">
-                    {entry.text}
-                  </p>
-                  <span className="text-[11px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap">
-                    {entry.timestamp}
-                  </span>
-                </div>
-                {entry.detail && (
-                  <p className="text-[12px] leading-[16px] text-ros-ink-muted mt-0.5">
-                    {entry.detail}
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex flex-col py-1">
+        {visible.map((entry, i) => (
+          <FeedRow
+            key={i}
+            text={entry.text}
+            detail={entry.detail}
+            timestamp={entry.timestamp}
+            dot={typeToDot[entry.type]}
+          />
+        ))}
       </div>
 
       {hasMore && (

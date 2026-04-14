@@ -566,27 +566,17 @@ interface ImportPageLayoutProps {
 }
 declare function ImportPageLayout({ title, description, actions, children, panel, panelTitle, className, }: ImportPageLayoutProps): react_jsx_runtime.JSX.Element;
 /**
- * ImportActivityRow — single row in the Import panel's activity feed.
+ * ImportActivityRow — backward-compatible wrapper around FeedRow.
+ * Use FeedRow directly in new code.
  *
- * Mirrors the compact style of TeamMemberRow but for event tracking:
- * status dot + label + detail + timestamp.
- *
- * Cross-app semantics:
- *  - CallFlow:    label=receptionist, detail=file, status=read/sent/error
- *  - ShiftFlow:   label=doctor, detail="Nieobecność"/"Zmiana preferencji",
- *                 status=pending/done
- *  - ConsultFlow: label=doctor, detail="Upload audio", status=analyzing/done/error
+ * @deprecated Use `FeedRow` from "receptionos-ui" instead.
  */
 type ImportActivityStatus = "sent" | "read" | "pending" | "done" | "analyzing" | "error";
 interface ImportActivityRowProps {
-    /** Person or entity name. */
     label: string;
-    /** Event description. */
     detail?: string;
-    /** Timestamp string. */
     timestamp?: string;
     status?: ImportActivityStatus;
-    /** Called when row is clicked (e.g. to open detail). */
     onClick?: () => void;
     className?: string;
 }
@@ -889,33 +879,23 @@ interface TeamPanelFooterProps {
 declare function TeamPanelFooter({ brand, selectedCount, actionLabel, onAction, disabled, }: TeamPanelFooterProps): react_jsx_runtime.JSX.Element | null;
 
 /**
- * ActivityLog — chronological timeline of events for a team member,
- * shown inside MemberDetailView.
+ * ActivityLog — chronological timeline of events, shown inside
+ * MemberDetailView or as a standalone history section.
  *
- * Cross-app usage:
- *  - ShiftFlow: schedule deliveries, AI suggestions, days off requests
- *    (US-SF-02 sc.1 "grafik gotowy", US-SF-03 sc.1 "zgłasza nieobecność",
- *     US-SF-03 sc.2 "zaktualizował preferencje")
- *  - CallFlow: report generations, feedback given, coaching sessions
- *    (US-CF-02 sc.1 "raport gotowy", US-CF-04 sc.2 "omówiona")
- *  - ConsultFlow: consultation uploads, report deliveries, coaching notes
- *    (US-CO-02 sc.1 "raport gotowy", US-CO-05 sc.3 "notatka coachingowa")
+ * Uses FeedRow internally for each entry. This component adds
+ * the card wrapper, header, and expand/collapse logic.
  */
 type ActivityType = "report_sent" | "report_viewed" | "schedule_sent" | "schedule_confirmed" | "absence" | "preference_change" | "coaching_note" | "suggestion" | "feedback" | "custom";
 interface ActivityEntry {
     type: ActivityType;
-    /** Short description, e.g. "Wysłano grafik na tydzień 14–18 kwi". */
     text: string;
-    /** ISO timestamp or display string. */
     timestamp: string;
-    /** Optional extra detail shown below the text. */
     detail?: string;
-    /** Custom icon label override. */
+    /** @deprecated Use FeedRow directly if you need custom icons. */
     iconLabel?: string;
 }
 interface ActivityLogProps {
     entries: ActivityEntry[];
-    /** Max entries to show before "Pokaż więcej". 0 = show all. */
     maxVisible?: number;
     className?: string;
 }
@@ -924,19 +904,10 @@ declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogPro
 /**
  * SidePanel — right-side panel for the manager dashboard.
  *
- * Fixed height (fills viewport minus header). Two sections with
- * fixed proportions: team list takes 60%, feed takes 40%.
- * Both scroll independently within their allocated space.
+ * Fixed height, fixed 60/40 split between team and feed.
+ * Both sections scroll independently.
  *
- * Visual cues:
- *  - Panel background: surface-off (subtle gray, distinct from main)
- *  - Team rows: white card background (elevated from panel bg)
- *  - Feed rows: no background, smaller text (secondary info)
- *  - Permanent separator between sections
- *
- * Design principle: comfort over density. Each element shows only
- * the essential — name, one metric, one status indicator. No
- * information overload.
+ * Feed rows should use the shared <FeedRow> component.
  */
 interface SidePanelProps {
     teamContent: React.ReactNode;
@@ -949,18 +920,32 @@ interface SidePanelProps {
     className?: string;
 }
 declare function SidePanel({ teamContent, teamTitle, teamCount, teamToolbar, feedContent, feedTitle, footer, className, }: SidePanelProps): react_jsx_runtime.JSX.Element;
+
 /**
- * SidePanelFeedRow — minimal feed entry. Small text, no borders,
- * just a dot + one line + timestamp. Reads like a log, not a card.
+ * FeedRow — single row for any activity/event feed. Unified component
+ * replacing the previous SidePanelFeedRow, ImportActivityRow, and
+ * inline ActivityLog rows.
+ *
+ * Minimal: colored dot + text + optional detail + timestamp.
+ * Used in: SidePanel feed, ImportPageLayout panel, ActivityLog.
  */
-interface SidePanelFeedRowProps {
+type FeedDotColor = "green" | "orange" | "red" | "gray" | "blue" | "purple";
+interface FeedRowProps {
+    /** Primary text (one line, truncated). */
     text: string;
+    /** Secondary detail (smaller, optional). */
+    detail?: string;
+    /** Timestamp string. */
     timestamp?: string;
-    dotColor?: "green" | "orange" | "red" | "gray";
+    /** Dot color. Maps to design system status colors. */
+    dot?: FeedDotColor;
+    /** Clickable row. */
     onClick?: () => void;
+    /** Compact mode: smaller text, less padding. Used in SidePanel feed. */
+    compact?: boolean;
     className?: string;
 }
-declare function SidePanelFeedRow({ text, timestamp, dotColor, onClick, className, }: SidePanelFeedRowProps): react_jsx_runtime.JSX.Element;
+declare function FeedRow({ text, detail, timestamp, dot, onClick, compact, className, }: FeedRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * SwipeView — horizontal scroll-snap container for mobile-first
@@ -1158,4 +1143,4 @@ interface SetupFlowProps {
 }
 declare function SetupFlow({ steps, onComplete, completeLabel, onCancel, brand, className, }: SetupFlowProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, SidePanelFeedRow, type SidePanelFeedRowProps, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };

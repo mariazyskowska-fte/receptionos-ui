@@ -93,10 +93,13 @@ export {
 } from "./ActivityLog";
 export {
   SidePanel,
-  SidePanelFeedRow,
   type SidePanelProps,
-  type SidePanelFeedRowProps,
 } from "./SidePanel";
+export {
+  FeedRow,
+  type FeedRowProps,
+  type FeedDotColor,
+} from "./FeedRow";
 export {
   SwipeView,
   type SwipeViewProps,

@@ -132,40 +132,32 @@ export function ImportPageLayout({
 }
 
 /**
- * ImportActivityRow — single row in the Import panel's activity feed.
+ * ImportActivityRow — backward-compatible wrapper around FeedRow.
+ * Use FeedRow directly in new code.
  *
- * Mirrors the compact style of TeamMemberRow but for event tracking:
- * status dot + label + detail + timestamp.
- *
- * Cross-app semantics:
- *  - CallFlow:    label=receptionist, detail=file, status=read/sent/error
- *  - ShiftFlow:   label=doctor, detail="Nieobecność"/"Zmiana preferencji",
- *                 status=pending/done
- *  - ConsultFlow: label=doctor, detail="Upload audio", status=analyzing/done/error
+ * @deprecated Use `FeedRow` from "receptionos-ui" instead.
  */
 export type ImportActivityStatus = "sent" | "read" | "pending" | "done" | "analyzing" | "error";
 
 export interface ImportActivityRowProps {
-  /** Person or entity name. */
   label: string;
-  /** Event description. */
   detail?: string;
-  /** Timestamp string. */
   timestamp?: string;
   status?: ImportActivityStatus;
-  /** Called when row is clicked (e.g. to open detail). */
   onClick?: () => void;
   className?: string;
 }
 
-const statusDot: Record<ImportActivityStatus, { color: string; title: string }> = {
-  sent: { color: "bg-ros-warn-fg", title: "Wysłano" },
-  read: { color: "bg-ros-success-fg", title: "Odczytano" },
-  pending: { color: "bg-ros-warn-fg", title: "Oczekuje" },
-  done: { color: "bg-ros-success-fg", title: "Zrealizowano" },
-  analyzing: { color: "bg-ros-warn-fg", title: "Analizuję" },
-  error: { color: "bg-ros-danger-fg", title: "Błąd" },
+const statusToDot: Record<ImportActivityStatus, FeedDotColor> = {
+  sent: "orange",
+  read: "green",
+  pending: "orange",
+  done: "green",
+  analyzing: "orange",
+  error: "red",
 };
+
+import { FeedRow, type FeedDotColor } from "./FeedRow";
 
 export function ImportActivityRow({
   label,
@@ -175,43 +167,14 @@ export function ImportActivityRow({
   onClick,
   className,
 }: ImportActivityRowProps) {
-  const dot = status ? statusDot[status] : null;
-
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2.5 px-3 py-2 rounded-input transition-colors duration-150",
-        onClick && "cursor-pointer hover:bg-ros-surface-hover",
-        className,
-      )}
+    <FeedRow
+      text={label}
+      detail={detail}
+      timestamp={timestamp}
+      dot={status ? statusToDot[status] : "gray"}
       onClick={onClick}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
-    >
-      {/* Status dot */}
-      {dot && (
-        <span
-          className={cn("size-2 rounded-pill flex-shrink-0", dot.color)}
-          title={dot.title}
-        />
-      )}
-
-      {/* Content */}
-      <div className="flex flex-col gap-0 flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="text-[13px] font-medium text-ros-ink truncate">{label}</p>
-        </div>
-        {detail && (
-          <p className="text-[11px] text-ros-ink-muted truncate">{detail}</p>
-        )}
-      </div>
-
-      {/* Timestamp */}
-      {timestamp && (
-        <span className="text-[11px] text-ros-ink-faint flex-shrink-0">
-          {timestamp}
-        </span>
-      )}
-    </div>
+      className={className}
+    />
   );
 }
