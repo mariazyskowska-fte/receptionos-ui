@@ -833,32 +833,36 @@ declare function PerformanceOverview({ brand, mode, displayScale, title, periodL
 /**
  * DashboardLayout — two-column manager dashboard.
  *
+ * Two ways to provide the right panel:
+ *
+ * 1. `sidePanel` (recommended) — pass a <SidePanel> component directly.
+ *    It handles its own chrome (team list + feed + footer).
+ *
  *   ┌──────────────────────────────┬──────────────────┐
- *   │  MAIN (flex-1)              │  panelToolbar     │
- *   │  DashboardHeader            │  ──────────────── │
- *   │  TrendChart                 │  TeamMemberRow ☑  │
- *   │  TeamHeatmap                │  TeamMemberRow ☐  │
- *   │                             │  TeamMemberRow ☑  │
- *   │                             │  ──────────────── │
- *   │                             │  [Wyślij do 2]    │
+ *   │  MAIN (flex-1)              │  Zespół (3)       │
+ *   │  DashboardHeader            │  ┌ Anna    82% ┐ │
+ *   │  TrendChart                 │  ┌ Kasia   65% ┐ │
+ *   │  TeamHeatmap                │  ────────────── │
+ *   │                             │  Ostatnie zmiany │
+ *   │                             │  📄 Raport...    │
+ *   │                             │  📅 Grafik...    │
+ *   │                             │  [Wyślij (2)]    │
  *   └──────────────────────────────┴──────────────────┘
  *
- * Panel supports:
- *  - panelToolbar: select all, count, filter
- *  - panelFooter: bulk action button (send schedule/report)
+ * 2. `panel` (legacy) — raw content wrapped in a default aside.
  */
 interface DashboardLayoutProps {
     children: React.ReactNode;
-    /** Right panel content: TeamMemberRow list. */
-    panel: React.ReactNode;
+    /** Preferred: pass a <SidePanel> component. */
+    sidePanel?: React.ReactNode;
+    /** Legacy: raw panel content (wrapped in default aside). */
+    panel?: React.ReactNode;
     panelTitle?: string;
-    /** Toolbar above the list (select all toggle, count info). */
     panelToolbar?: React.ReactNode;
-    /** Footer below the list (bulk action button). */
     panelFooter?: React.ReactNode;
     className?: string;
 }
-declare function DashboardLayout({ children, panel, panelTitle, panelToolbar, panelFooter, className, }: DashboardLayoutProps): react_jsx_runtime.JSX.Element;
+declare function DashboardLayout({ children, sidePanel, panel, panelTitle, panelToolbar, panelFooter, className, }: DashboardLayoutProps): react_jsx_runtime.JSX.Element;
 /**
  * TeamPanelToolbar — helper for the panel toolbar slot.
  * Provides select all toggle + selected count.
@@ -916,6 +920,61 @@ interface ActivityLogProps {
     className?: string;
 }
 declare function ActivityLog({ entries, maxVisible, className, }: ActivityLogProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * SidePanel — right-side panel for the manager dashboard, combining
+ * a team member list (top) and an activity feed (bottom) in a single
+ * sticky column.
+ *
+ * Visual distinction from main content:
+ *  - Slightly tinted background (surface-off) instead of white
+ *  - The two sections have different inner backgrounds:
+ *    team list = white cards, activity feed = transparent rows
+ *  - Thin separator between sections
+ *
+ * This replaces the raw `panel` slot in DashboardLayout with a
+ * structured, opinionated component.
+ *
+ * Cross-app usage:
+ *  - CallFlow:    team = recepcjonistki, feed = sent reports + read status
+ *  - ConsultFlow: team = lekarze, feed = uploads + analysis status
+ *  - ShiftFlow:   team = lekarze, feed = schedule changes + absence requests
+ */
+interface SidePanelProps {
+    /** Team member list (top section). */
+    teamContent: React.ReactNode;
+    teamTitle?: string;
+    teamCount?: number;
+    /** Toolbar above team list (select all, etc.). */
+    teamToolbar?: React.ReactNode;
+    /** Activity feed (bottom section). */
+    feedContent: React.ReactNode;
+    feedTitle?: string;
+    /** Footer for bulk actions. */
+    footer?: React.ReactNode;
+    className?: string;
+}
+declare function SidePanel({ teamContent, teamTitle, teamCount, teamToolbar, feedContent, feedTitle, footer, className, }: SidePanelProps): react_jsx_runtime.JSX.Element;
+/**
+ * SidePanelFeedRow — single row in the activity feed section.
+ * Compact, no border, transparent background — visually distinct
+ * from TeamMemberRow cards above.
+ */
+interface SidePanelFeedRowProps {
+    /** Icon or emoji. */
+    icon?: string;
+    /** Primary text. */
+    text: string;
+    /** Secondary detail. */
+    detail?: string;
+    /** Timestamp. */
+    timestamp?: string;
+    /** Status dot color. */
+    dotColor?: "green" | "orange" | "red" | "gray";
+    onClick?: () => void;
+    className?: string;
+}
+declare function SidePanelFeedRow({ icon, text, detail, timestamp, dotColor, onClick, className, }: SidePanelFeedRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * SwipeView — horizontal scroll-snap container for mobile-first
@@ -1113,4 +1172,4 @@ interface SetupFlowProps {
 }
 declare function SetupFlow({ steps, onComplete, completeLabel, onCancel, brand, className, }: SetupFlowProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, SidePanelFeedRow, type SidePanelFeedRowProps, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint };

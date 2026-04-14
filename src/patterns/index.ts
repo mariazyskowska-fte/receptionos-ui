@@ -92,6 +92,12 @@ export {
   type ActivityType,
 } from "./ActivityLog";
 export {
+  SidePanel,
+  SidePanelFeedRow,
+  type SidePanelProps,
+  type SidePanelFeedRowProps,
+} from "./SidePanel";
+export {
   SwipeView,
   type SwipeViewProps,
   type SwipeViewPage,

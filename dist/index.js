@@ -1657,6 +1657,7 @@ function PerformanceOverview({
 import { jsx as jsx21, jsxs as jsxs18 } from "react/jsx-runtime";
 function DashboardLayout({
   children,
+  sidePanel,
   panel,
   panelTitle = "Zesp\xF3\u0142",
   panelToolbar,
@@ -1665,7 +1666,7 @@ function DashboardLayout({
 }) {
   return /* @__PURE__ */ jsxs18("div", { className: cn("flex gap-6 items-start", className), children: [
     /* @__PURE__ */ jsx21("div", { className: "flex-1 min-w-0 flex flex-col gap-4", children }),
-    /* @__PURE__ */ jsxs18("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
+    sidePanel || /* @__PURE__ */ jsxs18("aside", { className: "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden", children: [
       /* @__PURE__ */ jsx21("div", { className: "px-4 py-3 border-b border-ros-border flex items-center justify-between", children: /* @__PURE__ */ jsx21("p", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: panelTitle }) }),
       panelToolbar && /* @__PURE__ */ jsx21("div", { className: "px-3 py-2 border-b border-ros-border bg-ros-surface-off", children: panelToolbar }),
       /* @__PURE__ */ jsx21("div", { className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1", children: panel }),
@@ -1791,9 +1792,86 @@ function ActivityLog({
   );
 }
 
+// src/patterns/SidePanel.tsx
+import { jsx as jsx23, jsxs as jsxs20 } from "react/jsx-runtime";
+function SidePanel({
+  teamContent,
+  teamTitle = "Zesp\xF3\u0142",
+  teamCount,
+  teamToolbar,
+  feedContent,
+  feedTitle = "Ostatnie zmiany",
+  footer,
+  className
+}) {
+  return /* @__PURE__ */ jsxs20(
+    "aside",
+    {
+      className: cn(
+        "w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)]",
+        "flex flex-col rounded-card border border-ros-border bg-ros-surface-off overflow-hidden",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ jsxs20("div", { className: "flex flex-col", children: [
+          /* @__PURE__ */ jsx23("div", { className: "px-4 py-2.5 flex items-center justify-between", children: /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx23("p", { className: "text-[13px] leading-[18px] font-semibold text-ros-ink", children: teamTitle }),
+            teamCount != null && /* @__PURE__ */ jsx23(Badge, { tone: "neutral", children: teamCount })
+          ] }) }),
+          teamToolbar && /* @__PURE__ */ jsx23("div", { className: "px-3 py-1.5 border-t border-ros-border/50", children: teamToolbar }),
+          /* @__PURE__ */ jsx23("div", { className: "overflow-y-auto px-2 py-1.5 flex flex-col gap-1 max-h-[45%]", children: teamContent })
+        ] }),
+        /* @__PURE__ */ jsx23("div", { className: "mx-3 border-t border-ros-ink-faint/20" }),
+        /* @__PURE__ */ jsxs20("div", { className: "flex-1 flex flex-col min-h-0", children: [
+          /* @__PURE__ */ jsx23("div", { className: "px-4 py-2.5", children: /* @__PURE__ */ jsx23("p", { className: "text-[11px] leading-[14px] font-semibold text-ros-ink-muted uppercase tracking-wide", children: feedTitle }) }),
+          /* @__PURE__ */ jsx23("div", { className: "flex-1 overflow-y-auto px-2 pb-2 flex flex-col gap-0.5", children: feedContent })
+        ] }),
+        footer && /* @__PURE__ */ jsx23("div", { className: "px-3 py-2.5 border-t border-ros-border bg-white", children: footer })
+      ]
+    }
+  );
+}
+var dotColors = {
+  green: "bg-ros-success-fg",
+  orange: "bg-ros-warn-fg",
+  red: "bg-ros-danger-fg",
+  gray: "bg-ros-ink-faint"
+};
+function SidePanelFeedRow({
+  icon,
+  text,
+  detail,
+  timestamp,
+  dotColor,
+  onClick,
+  className
+}) {
+  return /* @__PURE__ */ jsxs20(
+    "div",
+    {
+      className: cn(
+        "flex items-start gap-2 px-2 py-1.5 rounded-input transition-colors duration-150",
+        onClick && "cursor-pointer hover:bg-white/60",
+        className
+      ),
+      onClick,
+      role: onClick ? "button" : void 0,
+      tabIndex: onClick ? 0 : void 0,
+      children: [
+        /* @__PURE__ */ jsx23("div", { className: "flex-shrink-0 mt-0.5", children: icon ? /* @__PURE__ */ jsx23("span", { className: "text-[11px]", children: icon }) : dotColor ? /* @__PURE__ */ jsx23("span", { className: cn("inline-block size-1.5 rounded-pill mt-1", dotColors[dotColor]) }) : null }),
+        /* @__PURE__ */ jsxs20("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsx23("p", { className: "text-[12px] leading-[16px] text-ros-ink truncate", children: text }),
+          detail && /* @__PURE__ */ jsx23("p", { className: "text-[10px] leading-[14px] text-ros-ink-faint truncate", children: detail })
+        ] }),
+        timestamp && /* @__PURE__ */ jsx23("span", { className: "text-[10px] text-ros-ink-faint flex-shrink-0 whitespace-nowrap mt-0.5", children: timestamp })
+      ]
+    }
+  );
+}
+
 // src/patterns/SwipeView.tsx
 import * as React11 from "react";
-import { jsx as jsx23, jsxs as jsxs20 } from "react/jsx-runtime";
+import { jsx as jsx24, jsxs as jsxs21 } from "react/jsx-runtime";
 var brandDot = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
@@ -1843,8 +1921,8 @@ function SwipeView({
     const width = scrollRef.current.offsetWidth;
     scrollRef.current.scrollTo({ left: width * index, behavior: "smooth" });
   }
-  return /* @__PURE__ */ jsxs20("div", { className: cn("flex flex-col", className), children: [
-    /* @__PURE__ */ jsx23("div", { className: "flex items-center justify-center gap-4 py-3 px-4", children: pages.map((page, i) => /* @__PURE__ */ jsxs20(
+  return /* @__PURE__ */ jsxs21("div", { className: cn("flex flex-col", className), children: [
+    /* @__PURE__ */ jsx24("div", { className: "flex items-center justify-center gap-4 py-3 px-4", children: pages.map((page, i) => /* @__PURE__ */ jsxs21(
       "button",
       {
         type: "button",
@@ -1852,7 +1930,7 @@ function SwipeView({
         className: "flex flex-col items-center gap-1 bg-transparent border-none cursor-pointer p-0",
         "aria-label": page.label,
         children: [
-          /* @__PURE__ */ jsx23(
+          /* @__PURE__ */ jsx24(
             "span",
             {
               className: cn(
@@ -1862,7 +1940,7 @@ function SwipeView({
               children: page.label
             }
           ),
-          /* @__PURE__ */ jsx23(
+          /* @__PURE__ */ jsx24(
             "div",
             {
               className: cn(
@@ -1875,13 +1953,13 @@ function SwipeView({
       },
       page.key
     )) }),
-    /* @__PURE__ */ jsx23(
+    /* @__PURE__ */ jsx24(
       "div",
       {
         ref: scrollRef,
         className: "flex overflow-x-auto snap-x snap-mandatory scrollbar-hide",
         style: { WebkitOverflowScrolling: "touch", scrollbarWidth: "none" },
-        children: pages.map((page) => /* @__PURE__ */ jsx23(
+        children: pages.map((page) => /* @__PURE__ */ jsx24(
           "div",
           {
             className: "w-full flex-shrink-0 snap-center",
@@ -1895,7 +1973,7 @@ function SwipeView({
 }
 
 // src/patterns/ReportCard.tsx
-import { jsx as jsx24, jsxs as jsxs21 } from "react/jsx-runtime";
+import { jsx as jsx25, jsxs as jsxs22 } from "react/jsx-runtime";
 var statusConfig2 = {
   completed: { label: "\u2713", tone: "success" },
   analyzing: { label: "...", tone: "warn" },
@@ -1924,7 +2002,7 @@ function ReportCard({
   className
 }) {
   const cfg = statusConfig2[status];
-  return /* @__PURE__ */ jsxs21(
+  return /* @__PURE__ */ jsxs22(
     "button",
     {
       type: "button",
@@ -1934,7 +2012,7 @@ function ReportCard({
         className
       ),
       children: [
-        /* @__PURE__ */ jsx24(
+        /* @__PURE__ */ jsx25(
           "div",
           {
             className: cn(
@@ -1944,26 +2022,26 @@ function ReportCard({
             children: label
           }
         ),
-        /* @__PURE__ */ jsxs21("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ jsxs21("p", { className: "text-[14px] font-medium text-ros-ink truncate", children: [
+        /* @__PURE__ */ jsxs22("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsxs22("p", { className: "text-[14px] font-medium text-ros-ink truncate", children: [
             "Pacjent ",
             label
           ] }),
-          /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-2 text-[11px] text-ros-ink-muted", children: [
-            /* @__PURE__ */ jsx24("span", { children: date }),
-            subtitle && /* @__PURE__ */ jsxs21("span", { children: [
+          /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2 text-[11px] text-ros-ink-muted", children: [
+            /* @__PURE__ */ jsx25("span", { children: date }),
+            subtitle && /* @__PURE__ */ jsxs22("span", { children: [
               "\xB7 ",
               subtitle
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
-          scoreDetails && scoreDetails.length > 0 && /* @__PURE__ */ jsx24("div", { className: "hidden sm:flex gap-2", children: scoreDetails.map((d) => /* @__PURE__ */ jsxs21("div", { className: "text-center", children: [
-            /* @__PURE__ */ jsx24("div", { className: cn("text-[12px] font-bold", scoreColor(d.value)), children: d.value.toFixed(1) }),
-            /* @__PURE__ */ jsx24("div", { className: "text-[9px] text-ros-ink-faint", children: d.label })
+        /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
+          scoreDetails && scoreDetails.length > 0 && /* @__PURE__ */ jsx25("div", { className: "hidden sm:flex gap-2", children: scoreDetails.map((d) => /* @__PURE__ */ jsxs22("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsx25("div", { className: cn("text-[12px] font-bold", scoreColor(d.value)), children: d.value.toFixed(1) }),
+            /* @__PURE__ */ jsx25("div", { className: "text-[9px] text-ros-ink-faint", children: d.label })
           ] }, d.label)) }),
-          status === "completed" && score != null && /* @__PURE__ */ jsx24("div", { className: "px-2 py-0.5 rounded-input bg-ros-surface-off", children: /* @__PURE__ */ jsx24("span", { className: cn("text-[16px] font-bold", scoreColor(score)), children: score.toFixed(1) }) }),
-          /* @__PURE__ */ jsx24(Badge, { tone: cfg.tone, children: cfg.label })
+          status === "completed" && score != null && /* @__PURE__ */ jsx25("div", { className: "px-2 py-0.5 rounded-input bg-ros-surface-off", children: /* @__PURE__ */ jsx25("span", { className: cn("text-[16px] font-bold", scoreColor(score)), children: score.toFixed(1) }) }),
+          /* @__PURE__ */ jsx25(Badge, { tone: cfg.tone, children: cfg.label })
         ] })
       ]
     }
@@ -1971,7 +2049,7 @@ function ReportCard({
 }
 
 // src/patterns/ReportSection.tsx
-import { jsx as jsx25, jsxs as jsxs22 } from "react/jsx-runtime";
+import { jsx as jsx26, jsxs as jsxs23 } from "react/jsx-runtime";
 var variantStyles = {
   scores: {
     bg: "bg-white",
@@ -2018,7 +2096,7 @@ function ReportSection({
   className
 }) {
   const v = variantStyles[variant];
-  return /* @__PURE__ */ jsxs22(
+  return /* @__PURE__ */ jsxs23(
     "div",
     {
       className: cn(
@@ -2027,15 +2105,15 @@ function ReportSection({
         className
       ),
       children: [
-        /* @__PURE__ */ jsx25("div", { className: cn("h-[3px] w-full", v.accent) }),
-        /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between px-5 pt-4 pb-2", children: [
-          /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
-            icon && /* @__PURE__ */ jsx25("span", { className: cn("flex-shrink-0", v.titleColor), children: icon }),
-            /* @__PURE__ */ jsx25("p", { className: cn("text-[14px] leading-[20px] font-semibold", v.titleColor), children: title })
+        /* @__PURE__ */ jsx26("div", { className: cn("h-[3px] w-full", v.accent) }),
+        /* @__PURE__ */ jsxs23("div", { className: "flex items-center justify-between px-5 pt-4 pb-2", children: [
+          /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-2", children: [
+            icon && /* @__PURE__ */ jsx26("span", { className: cn("flex-shrink-0", v.titleColor), children: icon }),
+            /* @__PURE__ */ jsx26("p", { className: cn("text-[14px] leading-[20px] font-semibold", v.titleColor), children: title })
           ] }),
           headerRight
         ] }),
-        /* @__PURE__ */ jsx25("div", { className: "px-5 pb-5", children })
+        /* @__PURE__ */ jsx26("div", { className: "px-5 pb-5", children })
       ]
     }
   );
@@ -2043,7 +2121,7 @@ function ReportSection({
 
 // src/patterns/CardStack.tsx
 import * as React12 from "react";
-import { jsx as jsx26, jsxs as jsxs23 } from "react/jsx-runtime";
+import { jsx as jsx27, jsxs as jsxs24 } from "react/jsx-runtime";
 var brandBg5 = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
@@ -2109,22 +2187,22 @@ function CardStack({
     }
   }
   const progress = (activeIndex + 1) / total * 100;
-  return /* @__PURE__ */ jsxs23("div", { className: cn("flex flex-col gap-4", className), children: [
-    total > 1 && /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-3 px-1", children: [
-      /* @__PURE__ */ jsx26("div", { className: "flex-1 h-1 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ jsx26(
+  return /* @__PURE__ */ jsxs24("div", { className: cn("flex flex-col gap-4", className), children: [
+    total > 1 && /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-3 px-1", children: [
+      /* @__PURE__ */ jsx27("div", { className: "flex-1 h-1 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ jsx27(
         "div",
         {
           className: cn("h-full rounded-pill transition-all duration-200", brandBg5[brand]),
           style: { width: `${progress}%` }
         }
       ) }),
-      /* @__PURE__ */ jsxs23("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0", children: [
+      /* @__PURE__ */ jsxs24("span", { className: "text-[11px] text-ros-ink-faint flex-shrink-0", children: [
         activeIndex + 1,
         "/",
         total
       ] })
     ] }),
-    /* @__PURE__ */ jsx26(
+    /* @__PURE__ */ jsx27(
       "div",
       {
         ref: containerRef,
@@ -2140,7 +2218,7 @@ function CardStack({
         onMouseLeave: () => {
           if (isDragging) handleEnd();
         },
-        children: /* @__PURE__ */ jsx26(
+        children: /* @__PURE__ */ jsx27(
           "div",
           {
             className: cn(
@@ -2156,13 +2234,13 @@ function CardStack({
         )
       }
     ),
-    activeIndex === 0 && total > 1 && !isDragging && /* @__PURE__ */ jsx26("p", { className: "text-center text-[11px] text-ros-ink-faint animate-pulse", children: "\u2190 przesu\u0144, aby zobaczy\u0107 wi\u0119cej" })
+    activeIndex === 0 && total > 1 && !isDragging && /* @__PURE__ */ jsx27("p", { className: "text-center text-[11px] text-ros-ink-faint animate-pulse", children: "\u2190 przesu\u0144, aby zobaczy\u0107 wi\u0119cej" })
   ] });
 }
 
 // src/patterns/TranscriptDrawer.tsx
 import * as React13 from "react";
-import { jsx as jsx27, jsxs as jsxs24 } from "react/jsx-runtime";
+import { jsx as jsx28, jsxs as jsxs25 } from "react/jsx-runtime";
 function TranscriptDrawer({
   content,
   onCopy,
@@ -2203,7 +2281,7 @@ function TranscriptDrawer({
     });
     onCopy?.();
   }
-  return /* @__PURE__ */ jsxs24(
+  return /* @__PURE__ */ jsxs25(
     "div",
     {
       className: cn(
@@ -2216,7 +2294,7 @@ function TranscriptDrawer({
         maxHeight: "70vh"
       },
       children: [
-        /* @__PURE__ */ jsxs24(
+        /* @__PURE__ */ jsxs25(
           "div",
           {
             className: "flex items-center justify-between px-4 py-3 cursor-pointer select-none flex-shrink-0",
@@ -2235,12 +2313,12 @@ function TranscriptDrawer({
               if (isDragging) handleEnd();
             },
             children: [
-              /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ jsx27("div", { className: "w-8 h-1 rounded-pill bg-ros-ink-faint/40 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" }),
-                /* @__PURE__ */ jsx27("span", { className: "text-[13px] font-medium text-ros-ink-medium mt-1", children: label }),
-                /* @__PURE__ */ jsx27("span", { className: "text-[11px] text-ros-ink-faint mt-1", children: expanded ? "\u25BC" : "\u25B2" })
+              /* @__PURE__ */ jsxs25("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx28("div", { className: "w-8 h-1 rounded-pill bg-ros-ink-faint/40 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" }),
+                /* @__PURE__ */ jsx28("span", { className: "text-[13px] font-medium text-ros-ink-medium mt-1", children: label }),
+                /* @__PURE__ */ jsx28("span", { className: "text-[11px] text-ros-ink-faint mt-1", children: expanded ? "\u25BC" : "\u25B2" })
               ] }),
-              expanded && /* @__PURE__ */ jsx27(
+              expanded && /* @__PURE__ */ jsx28(
                 Button,
                 {
                   variant: "ghost",
@@ -2255,7 +2333,7 @@ function TranscriptDrawer({
             ]
           }
         ),
-        /* @__PURE__ */ jsx27("div", { className: "flex-1 overflow-y-auto px-4 pb-6", children: /* @__PURE__ */ jsx27("p", { className: "text-[13px] leading-[20px] text-ros-ink-medium whitespace-pre-wrap", children: content }) })
+        /* @__PURE__ */ jsx28("div", { className: "flex-1 overflow-y-auto px-4 pb-6", children: /* @__PURE__ */ jsx28("p", { className: "text-[13px] leading-[20px] text-ros-ink-medium whitespace-pre-wrap", children: content }) })
       ]
     }
   );
@@ -2263,7 +2341,7 @@ function TranscriptDrawer({
 
 // src/patterns/SetupFlow.tsx
 import * as React14 from "react";
-import { jsx as jsx28, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx29, jsxs as jsxs26 } from "react/jsx-runtime";
 var brandBg6 = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
@@ -2299,9 +2377,9 @@ function SetupFlow({
   }
   const progress = (activeIndex + 1) / total * 100;
   const canProceed = current.isValid !== false;
-  return /* @__PURE__ */ jsxs25("div", { className: cn("flex flex-col gap-4", className), children: [
-    /* @__PURE__ */ jsxs25("div", { className: "flex items-center gap-3", children: [
-      onCancel && /* @__PURE__ */ jsx28(
+  return /* @__PURE__ */ jsxs26("div", { className: cn("flex flex-col gap-4", className), children: [
+    /* @__PURE__ */ jsxs26("div", { className: "flex items-center gap-3", children: [
+      onCancel && /* @__PURE__ */ jsx29(
         "button",
         {
           type: "button",
@@ -2310,25 +2388,25 @@ function SetupFlow({
           children: "\u2715"
         }
       ),
-      /* @__PURE__ */ jsx28("div", { className: "flex-1 h-1.5 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx29("div", { className: "flex-1 h-1.5 bg-ros-surface-hover rounded-pill overflow-hidden", children: /* @__PURE__ */ jsx29(
         "div",
         {
           className: cn("h-full rounded-pill transition-all duration-300", brandBg6[brand]),
           style: { width: `${progress}%` }
         }
       ) }),
-      /* @__PURE__ */ jsxs25("span", { className: "text-[12px] text-ros-ink-faint flex-shrink-0", children: [
+      /* @__PURE__ */ jsxs26("span", { className: "text-[12px] text-ros-ink-faint flex-shrink-0", children: [
         activeIndex + 1,
         "/",
         total
       ] })
     ] }),
-    /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxs25("div", { children: [
-        /* @__PURE__ */ jsx28("h3", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: current.title }),
-        current.subtitle && /* @__PURE__ */ jsx28("p", { className: "text-[13px] text-ros-ink-muted mt-0.5", children: current.subtitle })
+    /* @__PURE__ */ jsxs26("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs26("div", { children: [
+        /* @__PURE__ */ jsx29("h3", { className: "text-[18px] leading-[28px] font-semibold text-ros-ink", children: current.title }),
+        current.subtitle && /* @__PURE__ */ jsx29("p", { className: "text-[13px] text-ros-ink-muted mt-0.5", children: current.subtitle })
       ] }),
-      current.optional && /* @__PURE__ */ jsx28(
+      current.optional && /* @__PURE__ */ jsx29(
         "button",
         {
           type: "button",
@@ -2338,10 +2416,10 @@ function SetupFlow({
         }
       )
     ] }),
-    /* @__PURE__ */ jsx28("div", { className: "rounded-card border border-ros-border bg-white p-5", children: current.content }),
-    /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
-      !isFirst ? /* @__PURE__ */ jsx28(Button, { variant: "ghost", onClick: handleBack, children: "\u2190 Wstecz" }) : /* @__PURE__ */ jsx28("div", {}),
-      /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx29("div", { className: "rounded-card border border-ros-border bg-white p-5", children: current.content }),
+    /* @__PURE__ */ jsxs26("div", { className: "flex items-center justify-between", children: [
+      !isFirst ? /* @__PURE__ */ jsx29(Button, { variant: "ghost", onClick: handleBack, children: "\u2190 Wstecz" }) : /* @__PURE__ */ jsx29("div", {}),
+      /* @__PURE__ */ jsx29(
         Button,
         {
           brand,
@@ -2379,6 +2457,8 @@ export {
   ReportSection,
   ScoreCardRow,
   SetupFlow,
+  SidePanel,
+  SidePanelFeedRow,
   SwipeView,
   TeamHeatmap,
   TeamMemberRow,

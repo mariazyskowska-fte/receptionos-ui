@@ -5,34 +5,39 @@ import { Button } from "../primitives/Button";
 /**
  * DashboardLayout — two-column manager dashboard.
  *
+ * Two ways to provide the right panel:
+ *
+ * 1. `sidePanel` (recommended) — pass a <SidePanel> component directly.
+ *    It handles its own chrome (team list + feed + footer).
+ *
  *   ┌──────────────────────────────┬──────────────────┐
- *   │  MAIN (flex-1)              │  panelToolbar     │
- *   │  DashboardHeader            │  ──────────────── │
- *   │  TrendChart                 │  TeamMemberRow ☑  │
- *   │  TeamHeatmap                │  TeamMemberRow ☐  │
- *   │                             │  TeamMemberRow ☑  │
- *   │                             │  ──────────────── │
- *   │                             │  [Wyślij do 2]    │
+ *   │  MAIN (flex-1)              │  Zespół (3)       │
+ *   │  DashboardHeader            │  ┌ Anna    82% ┐ │
+ *   │  TrendChart                 │  ┌ Kasia   65% ┐ │
+ *   │  TeamHeatmap                │  ────────────── │
+ *   │                             │  Ostatnie zmiany │
+ *   │                             │  📄 Raport...    │
+ *   │                             │  📅 Grafik...    │
+ *   │                             │  [Wyślij (2)]    │
  *   └──────────────────────────────┴──────────────────┘
  *
- * Panel supports:
- *  - panelToolbar: select all, count, filter
- *  - panelFooter: bulk action button (send schedule/report)
+ * 2. `panel` (legacy) — raw content wrapped in a default aside.
  */
 export interface DashboardLayoutProps {
   children: React.ReactNode;
-  /** Right panel content: TeamMemberRow list. */
-  panel: React.ReactNode;
+  /** Preferred: pass a <SidePanel> component. */
+  sidePanel?: React.ReactNode;
+  /** Legacy: raw panel content (wrapped in default aside). */
+  panel?: React.ReactNode;
   panelTitle?: string;
-  /** Toolbar above the list (select all toggle, count info). */
   panelToolbar?: React.ReactNode;
-  /** Footer below the list (bulk action button). */
   panelFooter?: React.ReactNode;
   className?: string;
 }
 
 export function DashboardLayout({
   children,
+  sidePanel,
   panel,
   panelTitle = "Zespół",
   panelToolbar,
@@ -46,34 +51,29 @@ export function DashboardLayout({
         {children}
       </div>
 
-      {/* Right panel — team list */}
-      <aside className="w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden">
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-ros-border flex items-center justify-between">
-          <p className="text-[14px] leading-[20px] font-semibold text-ros-ink">
-            {panelTitle}
-          </p>
-        </div>
-
-        {/* Toolbar (select all, filters) */}
-        {panelToolbar && (
-          <div className="px-3 py-2 border-b border-ros-border bg-ros-surface-off">
-            {panelToolbar}
+      {/* Right panel — SidePanel or legacy wrapper */}
+      {sidePanel || (
+        <aside className="w-[384px] min-w-[384px] flex-shrink-0 sticky top-[80px] max-h-[calc(100vh-96px)] flex flex-col rounded-card border border-ros-border bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-ros-border flex items-center justify-between">
+            <p className="text-[14px] leading-[20px] font-semibold text-ros-ink">
+              {panelTitle}
+            </p>
           </div>
-        )}
-
-        {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
-          {panel}
-        </div>
-
-        {/* Footer (bulk actions) */}
-        {panelFooter && (
-          <div className="px-3 py-2.5 border-t border-ros-border bg-white">
-            {panelFooter}
+          {panelToolbar && (
+            <div className="px-3 py-2 border-b border-ros-border bg-ros-surface-off">
+              {panelToolbar}
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
+            {panel}
           </div>
-        )}
-      </aside>
+          {panelFooter && (
+            <div className="px-3 py-2.5 border-t border-ros-border bg-white">
+              {panelFooter}
+            </div>
+          )}
+        </aside>
+      )}
     </div>
   );
 }
