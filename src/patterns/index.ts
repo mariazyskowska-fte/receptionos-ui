@@ -129,3 +129,18 @@ export {
   type SetupFlowProps,
   type SetupStep,
 } from "./SetupFlow";
+export {
+  StaffRosterRow,
+  type StaffRosterRowProps,
+  type RosterTrend,
+  type RosterEmphasis,
+  type RosterTagTone,
+  type RosterTag,
+  type RosterPrimaryMetric,
+  type RosterRelationLine,
+} from "./StaffRosterRow";
+export {
+  StaffRosterPanel,
+  type StaffRosterPanelProps,
+  type RosterFilter,
+} from "./StaffRosterPanel";

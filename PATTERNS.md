@@ -100,3 +100,36 @@ record. No "view in menu" indirection.
 explicitly forbids operators from seeing this list. Implementing this
 component on an operator route is a **direct contract violation** — it
 must be hard-blocked at the router level.
+
+---
+
+## 7. `StaffRosterRow` + `StaffRosterPanel`
+
+| App | User story | Scenario |
+|---|---|---|
+| ShiftFlow | US-SF-04 | Manager edits staff profiles in the schedule editor |
+| ShiftFlow | US-SF-06 | Assistant shift preference (morning/afternoon) badge |
+| ShiftFlow | US-SF-08 | Assistant hygiene capability badge |
+
+**Distinct from `TeamMemberRow`:** `TeamMemberRow` is a *dashboard KPI*
+row (Empathy Score / Utilization %), used in performance reviews.
+`StaffRosterRow` is a *schedule-editor management* row — denser,
+optimized for in-place edits and at-a-glance contract/shift state.
+Use both, never substitute.
+
+**Slot-based contract.** The component knows nothing about staff
+domains. Each consuming app picks what to show in each slot:
+
+| Group | `primaryMetric` | `metricCaption` | `tags` (top 3) | `relationLine` |
+|---|---|---|---|---|
+| Doctors | `28h` (planned hrs/month) | `cel 32h` | `2 asyst.`, `stawka niezatw.`, contract gaps | `zawsze z Dr X` |
+| Assistants | `🌅` / `🌇` (preference) | `ostatnio 🌇 czw` | `Higiena`, `Sterylizacja`, `Wymaga rotacji` | `Dr X / Dr Y` |
+| Receptionists | `Pn 8–16` (next shift) | `38/40h cel` | `Główna`, `Backup`, `Luka pokrycia` | — |
+
+**Manager-only.** Operators must never see another teammate's roster
+row (analogous to TeamMemberRow rule above).
+
+**Empty-state contract:** when the list is empty, `StaffRosterPanel`
+renders the `emptyState` slot in place of the list. Pass an
+`<EmptyState />` — never a bare empty container (cross-app rule
+inherited from §1).

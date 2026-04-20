@@ -1140,4 +1140,128 @@ interface SetupFlowProps {
 }
 declare function SetupFlow({ steps, onComplete, completeLabel, onCancel, brand, className, }: SetupFlowProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };
+/**
+ * StaffRosterRow — single row in the schedule-editor staff list.
+ *
+ * Distinct from `TeamMemberRow` (dashboard KPI row): this is a dense
+ * management roster used in the **schedule editor** to show 3 different
+ * staff groups (doctors, assistants, receptionists) with the SAME layout
+ * but DIFFERENT primary metrics relevant to each contract type.
+ *
+ * Usage anchors:
+ *  - ShiftFlow US-SF-04 (zarządzanie profilami) — manager edits roster
+ *  - ShiftFlow US-SF-06 (assistant shift preference)
+ *  - ShiftFlow US-SF-08 (assistant hygiene capability)
+ *
+ * Slot-based — domain-agnostic. Each consuming app fills slots with
+ * its own data:
+ *
+ *   • Doctors:        primaryMetric = planned hours / target
+ *                     relationLine  = "always parallel with Dr X"
+ *   • Assistants:     primaryMetric = preferred shift (🌅/🌇)
+ *                     metricCaption = last shift type + day
+ *                     relationLine  = primary doctor / secondary
+ *   • Receptionists:  primaryMetric = next shift label
+ *                     tags          = role (Główna / Backup)
+ *
+ * Density target: ~72 px row height with all slots filled.
+ *
+ * Role: MANAGER ONLY. Operators (doctor / assistant / receptionist views)
+ * never see other team members' roster entries.
+ */
+type RosterTrend = "up" | "down" | "flat";
+type RosterEmphasis = "none" | "warning" | "selected";
+/** Re-exported `BadgeTone` so consuming apps can use a single import. */
+type RosterTagTone = BadgeTone;
+interface RosterTag {
+    label: string;
+    tone?: RosterTagTone;
+}
+interface RosterPrimaryMetric {
+    /** Small label above the value, e.g. "h/mies" / "preferuje" / "zmiana" */
+    label: string;
+    /** The headline value — string or React node (icon/glyph) */
+    value: React.ReactNode;
+}
+interface RosterRelationLine {
+    icon?: React.ReactNode;
+    text: string;
+}
+interface StaffRosterRowProps {
+    /** Brand accent — affects nothing visually here (color comes from
+     * accentColor), but kept for parity with other patterns. */
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** Hex color from the database row (doctor/assistant/receptionist).
+     * Drawn as a thin vertical bar on the left edge. */
+    accentColor: string;
+    name: string;
+    /** Line under the name — role, specialty, available days. */
+    subtitle?: string;
+    /** Headline metric for this person. Always rendered on the right. */
+    primaryMetric: RosterPrimaryMetric;
+    /** Small caption under the metric — context for the value above. */
+    metricCaption?: string;
+    /** Trend arrow next to the value. */
+    trend?: RosterTrend;
+    /** Up to 3 badges shown under the subtitle. Extras are dropped. */
+    tags?: RosterTag[];
+    /** "Connection" line — partner doctor, assigned doctor, etc. */
+    relationLine?: RosterRelationLine;
+    /** Right-side action buttons (typically edit / delete). Click events
+     * are stopped at this slot so they don't trigger the row's onClick. */
+    actions?: React.ReactNode;
+    /** Emphasis state — wraps the row in a colored border. Use "warning"
+     * to flag attention (e.g. shift preference unmet) and "selected"
+     * to mark the actively-edited row. */
+    emphasis?: RosterEmphasis;
+    onClick?: () => void;
+    className?: string;
+}
+declare function StaffRosterRow({ accentColor, name, subtitle, primaryMetric, metricCaption, trend, tags, relationLine, actions, emphasis, onClick, className, }: StaffRosterRowProps): react_jsx_runtime.JSX.Element;
+
+/**
+ * StaffRosterPanel — wrapper around a list of `StaffRosterRow`s.
+ *
+ * Provides the consistent header (title + count + primary action),
+ * a search/filter strip, and a footer for aggregate stats. Used in
+ * the schedule-editor view to render three identical-looking panels
+ * for doctors, assistants, and receptionists — manager learns one
+ * mental model and reads three lists without context switching.
+ *
+ * Empty-state contract: when `children` is empty AND `emptyState` is
+ * provided, the empty state is rendered in place of the list. Never
+ * render an empty box (gherkin-enforced cross-app rule, see
+ * EmptyState.tsx).
+ */
+interface RosterFilter {
+    label: string;
+    active: boolean;
+    onToggle: () => void;
+}
+interface StaffRosterPanelProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** "Lekarze" / "Asystentki" / "Recepcjonistki" (or app-specific). */
+    title: string;
+    /** Total count shown next to the title — usually the unfiltered total. */
+    count: number;
+    /** Toggleable filter chips above the list. */
+    filters?: RosterFilter[];
+    /** Search input value. Omit `onSearchChange` to hide the search field. */
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
+    searchPlaceholder?: string;
+    /** Primary CTA in the header — typically "+ Dodaj". */
+    primaryAction?: {
+        label: string;
+        onClick: () => void;
+    };
+    /** Aggregate stats line below the list. Plain text — no Card wrapper. */
+    footer?: React.ReactNode;
+    /** Rendered when `children` is empty. Pass an `<EmptyState />`. */
+    emptyState?: React.ReactNode;
+    children: React.ReactNode;
+    className?: string;
+}
+declare function StaffRosterPanel({ brand, title, count, filters, searchValue, onSearchChange, searchPlaceholder, primaryAction, footer, emptyState, children, className, }: StaffRosterPanelProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type RosterEmphasis, type RosterFilter, type RosterPrimaryMetric, type RosterRelationLine, type RosterTag, type RosterTagTone, type RosterTrend, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, StaffRosterPanel, type StaffRosterPanelProps, StaffRosterRow, type StaffRosterRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };

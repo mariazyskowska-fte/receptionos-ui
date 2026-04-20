@@ -2462,6 +2462,178 @@ function SetupFlow({
     ] })
   ] });
 }
+
+// src/patterns/StaffRosterRow.tsx
+import { jsx as jsx31, jsxs as jsxs28 } from "react/jsx-runtime";
+var trendGlyph4 = {
+  up: "\u2191",
+  down: "\u2193",
+  flat: "\u2192"
+};
+var trendTone = {
+  up: "success",
+  down: "danger",
+  flat: "neutral"
+};
+var emphasisRing = {
+  none: "border-ros-border",
+  warning: "border-ros-warn-fg",
+  selected: "border-ros-ink-faint bg-ros-surface-off"
+};
+function StaffRosterRow({
+  accentColor,
+  name,
+  subtitle,
+  primaryMetric,
+  metricCaption,
+  trend,
+  tags,
+  relationLine,
+  actions,
+  emphasis = "none",
+  onClick,
+  className
+}) {
+  const visibleTags = tags?.slice(0, 3) ?? [];
+  return /* @__PURE__ */ jsxs28(
+    "div",
+    {
+      className: cn(
+        "w-full flex items-stretch gap-3 p-3 rounded-input border bg-white",
+        "transition-colors duration-150",
+        emphasisRing[emphasis],
+        onClick && "cursor-pointer hover:bg-ros-surface-hover",
+        className
+      ),
+      onClick,
+      role: onClick ? "button" : void 0,
+      tabIndex: onClick ? 0 : void 0,
+      onKeyDown: onClick ? (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      } : void 0,
+      children: [
+        /* @__PURE__ */ jsx31(
+          "span",
+          {
+            "aria-hidden": true,
+            className: "w-1 rounded-pill flex-shrink-0",
+            style: { backgroundColor: accentColor }
+          }
+        ),
+        /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-0.5 flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsx31("p", { className: "text-[13px] font-medium text-ros-ink truncate", children: name }),
+          subtitle && /* @__PURE__ */ jsx31("p", { className: "text-[11px] text-ros-ink-muted truncate", children: subtitle }),
+          relationLine && /* @__PURE__ */ jsxs28("p", { className: "text-[11px] text-ros-ink-faint truncate flex items-center gap-1 mt-0.5", children: [
+            relationLine.icon,
+            /* @__PURE__ */ jsx31("span", { className: "truncate", children: relationLine.text })
+          ] }),
+          visibleTags.length > 0 && /* @__PURE__ */ jsx31("div", { className: "flex gap-1 mt-1 flex-wrap", children: visibleTags.map((t, i) => /* @__PURE__ */ jsx31(Badge, { tone: t.tone ?? "neutral", children: t.label }, `${t.label}-${i}`)) })
+        ] }),
+        /* @__PURE__ */ jsxs28("div", { className: "flex flex-col items-end gap-0 flex-shrink-0 min-w-[80px]", children: [
+          /* @__PURE__ */ jsx31("span", { className: "text-[10px] text-ros-ink-muted leading-none", children: primaryMetric.label }),
+          /* @__PURE__ */ jsxs28("div", { className: "flex items-center gap-1 mt-0.5", children: [
+            /* @__PURE__ */ jsx31("span", { className: "text-[15px] font-semibold text-ros-ink leading-tight", children: primaryMetric.value }),
+            trend && /* @__PURE__ */ jsx31(Badge, { tone: trendTone[trend], children: trendGlyph4[trend] })
+          ] }),
+          metricCaption && /* @__PURE__ */ jsx31("span", { className: "text-[10px] text-ros-ink-faint mt-0.5 truncate max-w-[120px]", children: metricCaption })
+        ] }),
+        actions && /* @__PURE__ */ jsx31(
+          "div",
+          {
+            className: "flex items-center gap-1 flex-shrink-0",
+            onClick: (e) => e.stopPropagation(),
+            children: actions
+          }
+        )
+      ]
+    }
+  );
+}
+
+// src/patterns/StaffRosterPanel.tsx
+import * as React16 from "react";
+import { jsx as jsx32, jsxs as jsxs29 } from "react/jsx-runtime";
+var brandFocusRing = {
+  callflow: "focus:border-brand-callflow",
+  consultflow: "focus:border-brand-consultflow",
+  shiftflow: "focus:border-brand-shiftflow"
+};
+function StaffRosterPanel({
+  brand = "callflow",
+  title,
+  count,
+  filters,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder = "Szukaj\u2026",
+  primaryAction,
+  footer,
+  emptyState,
+  children,
+  className
+}) {
+  const childCount = React16.Children.count(children);
+  const isEmpty = childCount === 0;
+  const showToolbar = Boolean(onSearchChange) || filters && filters.length > 0;
+  return /* @__PURE__ */ jsxs29("section", { className: cn("flex flex-col gap-3", className), children: [
+    /* @__PURE__ */ jsxs29("header", { className: "flex items-center justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs29("h2", { className: "text-[14px] font-semibold text-ros-ink", children: [
+        title,
+        /* @__PURE__ */ jsxs29("span", { className: "text-ros-ink-faint font-normal", children: [
+          " \xB7 ",
+          count
+        ] })
+      ] }),
+      primaryAction && /* @__PURE__ */ jsxs29(
+        Button,
+        {
+          brand,
+          onClick: primaryAction.onClick,
+          className: "h-9 px-3 text-[13px]",
+          children: [
+            "+ ",
+            primaryAction.label
+          ]
+        }
+      )
+    ] }),
+    showToolbar && /* @__PURE__ */ jsxs29("div", { className: "flex gap-2 items-center flex-wrap", children: [
+      onSearchChange && /* @__PURE__ */ jsx32(
+        "input",
+        {
+          type: "search",
+          value: searchValue ?? "",
+          onChange: (e) => onSearchChange(e.target.value),
+          placeholder: searchPlaceholder,
+          "aria-label": searchPlaceholder,
+          className: cn(
+            "flex-1 min-w-[180px] h-9 px-3 bg-white rounded-input border border-ros-border-input shadow-subtle text-[13px] text-ros-ink outline-none transition-colors",
+            brandFocusRing[brand]
+          )
+        }
+      ),
+      filters?.map((f) => /* @__PURE__ */ jsx32(
+        "button",
+        {
+          type: "button",
+          onClick: f.onToggle,
+          className: cn(
+            "px-3 py-1.5 rounded-pill text-[11px] border transition-colors",
+            f.active ? "bg-ros-ink text-white border-ros-ink" : "bg-white text-ros-ink-muted border-ros-border hover:bg-ros-surface-hover"
+          ),
+          "aria-pressed": f.active,
+          children: f.label
+        },
+        f.label
+      ))
+    ] }),
+    /* @__PURE__ */ jsx32("div", { className: "flex flex-col gap-2", children: isEmpty && emptyState ? emptyState : children }),
+    footer && /* @__PURE__ */ jsx32("footer", { className: "text-[11px] text-ros-ink-muted pt-2 border-t border-ros-border", children: footer })
+  ] });
+}
 export {
   ActivityLog,
   AppHeader,
@@ -2490,6 +2662,8 @@ export {
   ScoreCardRow,
   SetupFlow,
   SidePanel,
+  StaffRosterPanel,
+  StaffRosterRow,
   SwipeView,
   TeamHeatmap,
   TeamMemberRow,
