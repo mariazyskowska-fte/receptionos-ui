@@ -138,9 +138,11 @@ export {
   type RosterTag,
   type RosterPrimaryMetric,
   type RosterRelationLine,
+  type RosterDensity,
 } from "./StaffRosterRow";
 export {
   StaffRosterPanel,
   type StaffRosterPanelProps,
   type RosterFilter,
+  type RosterPanelDensity,
 } from "./StaffRosterPanel";

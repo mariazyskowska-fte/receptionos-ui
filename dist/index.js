@@ -2491,16 +2491,19 @@ function StaffRosterRow({
   relationLine,
   actions,
   emphasis = "none",
+  density = "comfortable",
   onClick,
   className
 }) {
-  const visibleTags = tags?.slice(0, 3) ?? [];
+  const isCompact = density === "compact";
+  const visibleTags = (tags ?? []).slice(0, isCompact ? 2 : 3);
   return /* @__PURE__ */ jsxs28(
     "div",
     {
       className: cn(
-        "w-full flex items-stretch gap-3 p-3 rounded-input border bg-white",
+        "w-full flex items-stretch rounded-input border bg-white",
         "transition-colors duration-150",
+        isCompact ? "gap-2 p-2" : "gap-3 p-3",
         emphasisRing[emphasis],
         onClick && "cursor-pointer hover:bg-ros-surface-hover",
         className
@@ -2524,22 +2527,67 @@ function StaffRosterRow({
           }
         ),
         /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-0.5 flex-1 min-w-0", children: [
-          /* @__PURE__ */ jsx31("p", { className: "text-[13px] font-medium text-ros-ink truncate", children: name }),
-          subtitle && /* @__PURE__ */ jsx31("p", { className: "text-[11px] text-ros-ink-muted truncate", children: subtitle }),
-          relationLine && /* @__PURE__ */ jsxs28("p", { className: "text-[11px] text-ros-ink-faint truncate flex items-center gap-1 mt-0.5", children: [
+          /* @__PURE__ */ jsx31(
+            "p",
+            {
+              className: cn(
+                "font-medium text-ros-ink truncate",
+                isCompact ? "text-[12px]" : "text-[13px]"
+              ),
+              children: name
+            }
+          ),
+          subtitle && /* @__PURE__ */ jsx31(
+            "p",
+            {
+              className: cn(
+                "text-ros-ink-muted truncate",
+                isCompact ? "text-[10px]" : "text-[11px]"
+              ),
+              children: subtitle
+            }
+          ),
+          !isCompact && relationLine && /* @__PURE__ */ jsxs28("p", { className: "text-[11px] text-ros-ink-faint truncate flex items-center gap-1 mt-0.5", children: [
             relationLine.icon,
             /* @__PURE__ */ jsx31("span", { className: "truncate", children: relationLine.text })
           ] }),
-          visibleTags.length > 0 && /* @__PURE__ */ jsx31("div", { className: "flex gap-1 mt-1 flex-wrap", children: visibleTags.map((t, i) => /* @__PURE__ */ jsx31(Badge, { tone: t.tone ?? "neutral", children: t.label }, `${t.label}-${i}`)) })
+          visibleTags.length > 0 && /* @__PURE__ */ jsx31("div", { className: cn("flex gap-1 flex-wrap", isCompact ? "mt-0.5" : "mt-1"), children: visibleTags.map((t, i) => /* @__PURE__ */ jsx31(Badge, { tone: t.tone ?? "neutral", children: t.label }, `${t.label}-${i}`)) })
         ] }),
-        /* @__PURE__ */ jsxs28("div", { className: "flex flex-col items-end gap-0 flex-shrink-0 min-w-[80px]", children: [
-          /* @__PURE__ */ jsx31("span", { className: "text-[10px] text-ros-ink-muted leading-none", children: primaryMetric.label }),
-          /* @__PURE__ */ jsxs28("div", { className: "flex items-center gap-1 mt-0.5", children: [
-            /* @__PURE__ */ jsx31("span", { className: "text-[15px] font-semibold text-ros-ink leading-tight", children: primaryMetric.value }),
-            trend && /* @__PURE__ */ jsx31(Badge, { tone: trendTone[trend], children: trendGlyph4[trend] })
-          ] }),
-          metricCaption && /* @__PURE__ */ jsx31("span", { className: "text-[10px] text-ros-ink-faint mt-0.5 truncate max-w-[120px]", children: metricCaption })
-        ] }),
+        /* @__PURE__ */ jsxs28(
+          "div",
+          {
+            className: cn(
+              "flex flex-col items-end gap-0 flex-shrink-0",
+              isCompact ? "min-w-[56px]" : "min-w-[80px]"
+            ),
+            children: [
+              /* @__PURE__ */ jsx31("span", { className: "text-[10px] text-ros-ink-muted leading-none", children: primaryMetric.label }),
+              /* @__PURE__ */ jsxs28("div", { className: "flex items-center gap-1 mt-0.5", children: [
+                /* @__PURE__ */ jsx31(
+                  "span",
+                  {
+                    className: cn(
+                      "font-semibold text-ros-ink leading-tight",
+                      isCompact ? "text-[13px]" : "text-[15px]"
+                    ),
+                    children: primaryMetric.value
+                  }
+                ),
+                !isCompact && trend && /* @__PURE__ */ jsx31(Badge, { tone: trendTone[trend], children: trendGlyph4[trend] })
+              ] }),
+              metricCaption && /* @__PURE__ */ jsx31(
+                "span",
+                {
+                  className: cn(
+                    "text-[10px] text-ros-ink-faint mt-0.5 truncate",
+                    isCompact ? "max-w-[80px]" : "max-w-[120px]"
+                  ),
+                  children: metricCaption
+                }
+              )
+            ]
+          }
+        ),
         actions && /* @__PURE__ */ jsx31(
           "div",
           {
@@ -2572,67 +2620,99 @@ function StaffRosterPanel({
   primaryAction,
   footer,
   emptyState,
+  density = "comfortable",
   children,
   className
 }) {
+  const isCompact = density === "compact";
   const childCount = React16.Children.count(children);
   const isEmpty = childCount === 0;
   const showToolbar = Boolean(onSearchChange) || filters && filters.length > 0;
-  return /* @__PURE__ */ jsxs29("section", { className: cn("flex flex-col gap-3", className), children: [
-    /* @__PURE__ */ jsxs29("header", { className: "flex items-center justify-between gap-3", children: [
-      /* @__PURE__ */ jsxs29("h2", { className: "text-[14px] font-semibold text-ros-ink", children: [
-        title,
-        /* @__PURE__ */ jsxs29("span", { className: "text-ros-ink-faint font-normal", children: [
-          " \xB7 ",
-          count
-        ] })
-      ] }),
-      primaryAction && /* @__PURE__ */ jsxs29(
-        Button,
-        {
-          brand,
-          onClick: primaryAction.onClick,
-          className: "h-9 px-3 text-[13px]",
-          children: [
-            "+ ",
-            primaryAction.label
-          ]
-        }
-      )
-    ] }),
-    showToolbar && /* @__PURE__ */ jsxs29("div", { className: "flex gap-2 items-center flex-wrap", children: [
-      onSearchChange && /* @__PURE__ */ jsx32(
-        "input",
-        {
-          type: "search",
-          value: searchValue ?? "",
-          onChange: (e) => onSearchChange(e.target.value),
-          placeholder: searchPlaceholder,
-          "aria-label": searchPlaceholder,
-          className: cn(
-            "flex-1 min-w-[180px] h-9 px-3 bg-white rounded-input border border-ros-border-input shadow-subtle text-[13px] text-ros-ink outline-none transition-colors",
-            brandFocusRing[brand]
-          )
-        }
+  return /* @__PURE__ */ jsxs29(
+    "section",
+    {
+      className: cn(
+        "flex flex-col",
+        isCompact ? "gap-2" : "gap-3",
+        className
       ),
-      filters?.map((f) => /* @__PURE__ */ jsx32(
-        "button",
-        {
-          type: "button",
-          onClick: f.onToggle,
-          className: cn(
-            "px-3 py-1.5 rounded-pill text-[11px] border transition-colors",
-            f.active ? "bg-ros-ink text-white border-ros-ink" : "bg-white text-ros-ink-muted border-ros-border hover:bg-ros-surface-hover"
+      children: [
+        /* @__PURE__ */ jsxs29("header", { className: "flex items-center justify-between gap-3", children: [
+          /* @__PURE__ */ jsxs29(
+            "h2",
+            {
+              className: cn(
+                "font-semibold text-ros-ink",
+                isCompact ? "text-[12px] uppercase tracking-wide" : "text-[14px]"
+              ),
+              children: [
+                title,
+                /* @__PURE__ */ jsxs29("span", { className: "text-ros-ink-faint font-normal", children: [
+                  " \xB7 ",
+                  count
+                ] })
+              ]
+            }
           ),
-          "aria-pressed": f.active,
-          children: f.label
-        },
-        f.label
-      ))
-    ] }),
-    /* @__PURE__ */ jsx32("div", { className: "flex flex-col gap-2", children: isEmpty && emptyState ? emptyState : children }),
-    footer && /* @__PURE__ */ jsx32("footer", { className: "text-[11px] text-ros-ink-muted pt-2 border-t border-ros-border", children: footer })
-  ] });
+          primaryAction && /* @__PURE__ */ jsxs29(
+            Button,
+            {
+              brand,
+              onClick: primaryAction.onClick,
+              className: isCompact ? "h-7 px-2 text-[11px]" : "h-9 px-3 text-[13px]",
+              children: [
+                "+ ",
+                primaryAction.label
+              ]
+            }
+          )
+        ] }),
+        showToolbar && /* @__PURE__ */ jsxs29("div", { className: "flex gap-2 items-center flex-wrap", children: [
+          onSearchChange && /* @__PURE__ */ jsx32(
+            "input",
+            {
+              type: "search",
+              value: searchValue ?? "",
+              onChange: (e) => onSearchChange(e.target.value),
+              placeholder: searchPlaceholder,
+              "aria-label": searchPlaceholder,
+              className: cn(
+                "flex-1 min-w-[140px] bg-white rounded-input border border-ros-border-input shadow-subtle text-ros-ink outline-none transition-colors",
+                isCompact ? "h-7 px-2 text-[11px]" : "h-9 px-3 text-[13px]",
+                brandFocusRing[brand]
+              )
+            }
+          ),
+          filters?.map((f) => /* @__PURE__ */ jsx32(
+            "button",
+            {
+              type: "button",
+              onClick: f.onToggle,
+              className: cn(
+                "rounded-pill border transition-colors",
+                isCompact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1.5 text-[11px]",
+                f.active ? "bg-ros-ink text-white border-ros-ink" : "bg-white text-ros-ink-muted border-ros-border hover:bg-ros-surface-hover"
+              ),
+              "aria-pressed": f.active,
+              children: f.label
+            },
+            f.label
+          ))
+        ] }),
+        /* @__PURE__ */ jsx32("div", { className: cn("flex flex-col", isCompact ? "gap-1" : "gap-2"), children: isEmpty && emptyState ? emptyState : children }),
+        footer && /* @__PURE__ */ jsx32(
+          "footer",
+          {
+            className: cn(
+              "text-ros-ink-muted pt-2 border-t border-ros-border",
+              isCompact ? "text-[10px]" : "text-[11px]"
+            ),
+            children: footer
+          }
+        )
+      ]
+    }
+  );
 }
 export {
   ActivityLog,

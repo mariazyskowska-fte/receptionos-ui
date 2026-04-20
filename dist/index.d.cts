@@ -1173,6 +1173,13 @@ type RosterTrend = "up" | "down" | "flat";
 type RosterEmphasis = "none" | "warning" | "selected";
 /** Re-exported `BadgeTone` so consuming apps can use a single import. */
 type RosterTagTone = BadgeTone;
+/**
+ * `comfortable` — full row used in the main schedule editor column.
+ * `compact`     — narrower tile used inside a side panel (~320–384 px):
+ *                 smaller padding/font, no relation line, max 2 tags,
+ *                 metric trend hidden. Same data, denser presentation.
+ */
+type RosterDensity = "comfortable" | "compact";
 interface RosterTag {
     label: string;
     tone?: RosterTagTone;
@@ -1214,10 +1221,14 @@ interface StaffRosterRowProps {
      * to flag attention (e.g. shift preference unmet) and "selected"
      * to mark the actively-edited row. */
     emphasis?: RosterEmphasis;
+    /** Visual density. Default `comfortable`. Use `compact` inside a
+     * side panel — drops relationLine + trend, caps tags at 2, shrinks
+     * padding and typography. */
+    density?: RosterDensity;
     onClick?: () => void;
     className?: string;
 }
-declare function StaffRosterRow({ accentColor, name, subtitle, primaryMetric, metricCaption, trend, tags, relationLine, actions, emphasis, onClick, className, }: StaffRosterRowProps): react_jsx_runtime.JSX.Element;
+declare function StaffRosterRow({ accentColor, name, subtitle, primaryMetric, metricCaption, trend, tags, relationLine, actions, emphasis, density, onClick, className, }: StaffRosterRowProps): react_jsx_runtime.JSX.Element;
 
 /**
  * StaffRosterPanel — wrapper around a list of `StaffRosterRow`s.
@@ -1238,6 +1249,14 @@ interface RosterFilter {
     active: boolean;
     onToggle: () => void;
 }
+/**
+ * `comfortable` — full panel for the main schedule editor column.
+ * `compact`     — narrower spacing for use inside a side panel:
+ *                 smaller header, no search/filter toolbar by default,
+ *                 footer collapsed to a single line. Pair with
+ *                 `density="compact"` on each `StaffRosterRow`.
+ */
+type RosterPanelDensity = "comfortable" | "compact";
 interface StaffRosterPanelProps {
     brand?: "callflow" | "consultflow" | "shiftflow";
     /** "Lekarze" / "Asystentki" / "Recepcjonistki" (or app-specific). */
@@ -1259,9 +1278,11 @@ interface StaffRosterPanelProps {
     footer?: React.ReactNode;
     /** Rendered when `children` is empty. Pass an `<EmptyState />`. */
     emptyState?: React.ReactNode;
+    /** Visual density. `compact` is intended for sidebar usage. */
+    density?: RosterPanelDensity;
     children: React.ReactNode;
     className?: string;
 }
-declare function StaffRosterPanel({ brand, title, count, filters, searchValue, onSearchChange, searchPlaceholder, primaryAction, footer, emptyState, children, className, }: StaffRosterPanelProps): react_jsx_runtime.JSX.Element;
+declare function StaffRosterPanel({ brand, title, count, filters, searchValue, onSearchChange, searchPlaceholder, primaryAction, footer, emptyState, density, children, className, }: StaffRosterPanelProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type RosterEmphasis, type RosterFilter, type RosterPrimaryMetric, type RosterRelationLine, type RosterTag, type RosterTagTone, type RosterTrend, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, StaffRosterPanel, type StaffRosterPanelProps, StaffRosterRow, type StaffRosterRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type RosterDensity, type RosterEmphasis, type RosterFilter, type RosterPanelDensity, type RosterPrimaryMetric, type RosterRelationLine, type RosterTag, type RosterTagTone, type RosterTrend, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, StaffRosterPanel, type StaffRosterPanelProps, StaffRosterRow, type StaffRosterRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };

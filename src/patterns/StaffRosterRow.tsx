@@ -35,6 +35,13 @@ export type RosterTrend = "up" | "down" | "flat";
 export type RosterEmphasis = "none" | "warning" | "selected";
 /** Re-exported `BadgeTone` so consuming apps can use a single import. */
 export type RosterTagTone = BadgeTone;
+/**
+ * `comfortable` — full row used in the main schedule editor column.
+ * `compact`     — narrower tile used inside a side panel (~320–384 px):
+ *                 smaller padding/font, no relation line, max 2 tags,
+ *                 metric trend hidden. Same data, denser presentation.
+ */
+export type RosterDensity = "comfortable" | "compact";
 
 export interface RosterTag {
   label: string;
@@ -80,6 +87,10 @@ export interface StaffRosterRowProps {
    * to flag attention (e.g. shift preference unmet) and "selected"
    * to mark the actively-edited row. */
   emphasis?: RosterEmphasis;
+  /** Visual density. Default `comfortable`. Use `compact` inside a
+   * side panel — drops relationLine + trend, caps tags at 2, shrinks
+   * padding and typography. */
+  density?: RosterDensity;
   onClick?: () => void;
   className?: string;
 }
@@ -113,16 +124,19 @@ export function StaffRosterRow({
   relationLine,
   actions,
   emphasis = "none",
+  density = "comfortable",
   onClick,
   className,
 }: StaffRosterRowProps) {
-  const visibleTags = tags?.slice(0, 3) ?? [];
+  const isCompact = density === "compact";
+  const visibleTags = (tags ?? []).slice(0, isCompact ? 2 : 3);
 
   return (
     <div
       className={cn(
-        "w-full flex items-stretch gap-3 p-3 rounded-input border bg-white",
+        "w-full flex items-stretch rounded-input border bg-white",
         "transition-colors duration-150",
+        isCompact ? "gap-2 p-2" : "gap-3 p-3",
         emphasisRing[emphasis],
         onClick && "cursor-pointer hover:bg-ros-surface-hover",
         className,
@@ -150,20 +164,33 @@ export function StaffRosterRow({
 
       {/* Name + subtitle + relation + tags */}
       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-ros-ink truncate">
+        <p
+          className={cn(
+            "font-medium text-ros-ink truncate",
+            isCompact ? "text-[12px]" : "text-[13px]",
+          )}
+        >
           {name}
         </p>
         {subtitle && (
-          <p className="text-[11px] text-ros-ink-muted truncate">{subtitle}</p>
+          <p
+            className={cn(
+              "text-ros-ink-muted truncate",
+              isCompact ? "text-[10px]" : "text-[11px]",
+            )}
+          >
+            {subtitle}
+          </p>
         )}
-        {relationLine && (
+        {/* Relation line dropped in compact — too noisy in narrow column */}
+        {!isCompact && relationLine && (
           <p className="text-[11px] text-ros-ink-faint truncate flex items-center gap-1 mt-0.5">
             {relationLine.icon}
             <span className="truncate">{relationLine.text}</span>
           </p>
         )}
         {visibleTags.length > 0 && (
-          <div className="flex gap-1 mt-1 flex-wrap">
+          <div className={cn("flex gap-1 flex-wrap", isCompact ? "mt-0.5" : "mt-1")}>
             {visibleTags.map((t, i) => (
               <Badge key={`${t.label}-${i}`} tone={t.tone ?? "neutral"}>
                 {t.label}
@@ -173,19 +200,37 @@ export function StaffRosterRow({
         )}
       </div>
 
-      {/* Primary metric + trend + caption */}
-      <div className="flex flex-col items-end gap-0 flex-shrink-0 min-w-[80px]">
+      {/* Primary metric + (in comfortable) trend + caption */}
+      <div
+        className={cn(
+          "flex flex-col items-end gap-0 flex-shrink-0",
+          isCompact ? "min-w-[56px]" : "min-w-[80px]",
+        )}
+      >
         <span className="text-[10px] text-ros-ink-muted leading-none">
           {primaryMetric.label}
         </span>
         <div className="flex items-center gap-1 mt-0.5">
-          <span className="text-[15px] font-semibold text-ros-ink leading-tight">
+          <span
+            className={cn(
+              "font-semibold text-ros-ink leading-tight",
+              isCompact ? "text-[13px]" : "text-[15px]",
+            )}
+          >
             {primaryMetric.value}
           </span>
-          {trend && <Badge tone={trendTone[trend]}>{trendGlyph[trend]}</Badge>}
+          {/* Trend dropped in compact — saves a column of width */}
+          {!isCompact && trend && (
+            <Badge tone={trendTone[trend]}>{trendGlyph[trend]}</Badge>
+          )}
         </div>
         {metricCaption && (
-          <span className="text-[10px] text-ros-ink-faint mt-0.5 truncate max-w-[120px]">
+          <span
+            className={cn(
+              "text-[10px] text-ros-ink-faint mt-0.5 truncate",
+              isCompact ? "max-w-[80px]" : "max-w-[120px]",
+            )}
+          >
             {metricCaption}
           </span>
         )}

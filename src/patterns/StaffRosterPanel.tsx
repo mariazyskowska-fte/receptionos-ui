@@ -22,6 +22,15 @@ export interface RosterFilter {
   onToggle: () => void;
 }
 
+/**
+ * `comfortable` — full panel for the main schedule editor column.
+ * `compact`     — narrower spacing for use inside a side panel:
+ *                 smaller header, no search/filter toolbar by default,
+ *                 footer collapsed to a single line. Pair with
+ *                 `density="compact"` on each `StaffRosterRow`.
+ */
+export type RosterPanelDensity = "comfortable" | "compact";
+
 export interface StaffRosterPanelProps {
   brand?: "callflow" | "consultflow" | "shiftflow";
   /** "Lekarze" / "Asystentki" / "Recepcjonistki" (or app-specific). */
@@ -40,6 +49,8 @@ export interface StaffRosterPanelProps {
   footer?: React.ReactNode;
   /** Rendered when `children` is empty. Pass an `<EmptyState />`. */
   emptyState?: React.ReactNode;
+  /** Visual density. `compact` is intended for sidebar usage. */
+  density?: RosterPanelDensity;
   children: React.ReactNode;
   className?: string;
 }
@@ -64,17 +75,30 @@ export function StaffRosterPanel({
   primaryAction,
   footer,
   emptyState,
+  density = "comfortable",
   children,
   className,
 }: StaffRosterPanelProps) {
+  const isCompact = density === "compact";
   const childCount = React.Children.count(children);
   const isEmpty = childCount === 0;
   const showToolbar = Boolean(onSearchChange) || (filters && filters.length > 0);
 
   return (
-    <section className={cn("flex flex-col gap-3", className)}>
+    <section
+      className={cn(
+        "flex flex-col",
+        isCompact ? "gap-2" : "gap-3",
+        className,
+      )}
+    >
       <header className="flex items-center justify-between gap-3">
-        <h2 className="text-[14px] font-semibold text-ros-ink">
+        <h2
+          className={cn(
+            "font-semibold text-ros-ink",
+            isCompact ? "text-[12px] uppercase tracking-wide" : "text-[14px]",
+          )}
+        >
           {title}
           <span className="text-ros-ink-faint font-normal"> · {count}</span>
         </h2>
@@ -82,7 +106,11 @@ export function StaffRosterPanel({
           <Button
             brand={brand}
             onClick={primaryAction.onClick}
-            className="h-9 px-3 text-[13px]"
+            className={
+              isCompact
+                ? "h-7 px-2 text-[11px]"
+                : "h-9 px-3 text-[13px]"
+            }
           >
             + {primaryAction.label}
           </Button>
@@ -99,7 +127,10 @@ export function StaffRosterPanel({
               placeholder={searchPlaceholder}
               aria-label={searchPlaceholder}
               className={cn(
-                "flex-1 min-w-[180px] h-9 px-3 bg-white rounded-input border border-ros-border-input shadow-subtle text-[13px] text-ros-ink outline-none transition-colors",
+                "flex-1 min-w-[140px] bg-white rounded-input border border-ros-border-input shadow-subtle text-ros-ink outline-none transition-colors",
+                isCompact
+                  ? "h-7 px-2 text-[11px]"
+                  : "h-9 px-3 text-[13px]",
                 brandFocusRing[brand],
               )}
             />
@@ -110,7 +141,10 @@ export function StaffRosterPanel({
               type="button"
               onClick={f.onToggle}
               className={cn(
-                "px-3 py-1.5 rounded-pill text-[11px] border transition-colors",
+                "rounded-pill border transition-colors",
+                isCompact
+                  ? "px-2 py-0.5 text-[10px]"
+                  : "px-3 py-1.5 text-[11px]",
                 f.active
                   ? "bg-ros-ink text-white border-ros-ink"
                   : "bg-white text-ros-ink-muted border-ros-border hover:bg-ros-surface-hover",
@@ -123,12 +157,17 @@ export function StaffRosterPanel({
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className={cn("flex flex-col", isCompact ? "gap-1" : "gap-2")}>
         {isEmpty && emptyState ? emptyState : children}
       </div>
 
       {footer && (
-        <footer className="text-[11px] text-ros-ink-muted pt-2 border-t border-ros-border">
+        <footer
+          className={cn(
+            "text-ros-ink-muted pt-2 border-t border-ros-border",
+            isCompact ? "text-[10px]" : "text-[11px]",
+          )}
+        >
           {footer}
         </footer>
       )}
