@@ -1285,4 +1285,57 @@ interface StaffRosterPanelProps {
 }
 declare function StaffRosterPanel({ brand, title, count, filters, searchValue, onSearchChange, searchPlaceholder, primaryAction, footer, emptyState, density, children, className, }: StaffRosterPanelProps): react_jsx_runtime.JSX.Element;
 
-export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type RosterDensity, type RosterEmphasis, type RosterFilter, type RosterPanelDensity, type RosterPrimaryMetric, type RosterRelationLine, type RosterTag, type RosterTagTone, type RosterTrend, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, StaffRosterPanel, type StaffRosterPanelProps, StaffRosterRow, type StaffRosterRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries };
+/**
+ * WeekNavigator — toolbar for moving between weekly snapshots.
+ *
+ * Domain-agnostic: accepts pre-formatted labels, leaves date math to
+ * the consuming app (which already has date-fns / dayjs / luxon).
+ *
+ * Use cases across receptionOS:
+ *  - ShiftFlow: navigate between A/B-week schedules in the editor
+ *  - CallFlow:  scrub through historic weekly coaching reports
+ *  - ConsultFlow: weekly performance trend window
+ *
+ * Visual anatomy:
+ *  [ ←  Pop. ]   [ 21–25.04.2026 · Tydzień A 🔒 ]   [ Nast. → ]
+ *                                                        · [ Dziś ]
+ *                                                        · [ + Zaplanuj ▾ ]
+ *
+ * The label slot (currentLabel + parityLabel + lock) is owned by the
+ * caller — pass whatever date format suits the locale. Component
+ * only handles layout, focus order, and the dropdown for generation
+ * actions.
+ */
+interface WeekGenerateAction {
+    label: string;
+    weeksAhead: number;
+    onClick: () => void;
+}
+interface WeekNavigatorProps {
+    brand?: "callflow" | "consultflow" | "shiftflow";
+    /** Pre-formatted label for current week, e.g. "21–25.04.2026". */
+    currentLabel: string;
+    /** Optional secondary badge text, e.g. "Tydzień A" / "B". */
+    parityLabel?: string;
+    parityTone?: BadgeTone;
+    /** When true, shows a lock glyph next to the label (historical week). */
+    isReadOnly?: boolean;
+    /** Disable the prev arrow (e.g. earliest week available). */
+    prevDisabled?: boolean;
+    /** Disable the next arrow (rare — usually next is always allowed). */
+    nextDisabled?: boolean;
+    /** Tooltip for the prev button — typically the previous week's label. */
+    previousLabel?: string;
+    /** Tooltip for the next button. */
+    nextLabel?: string;
+    onPrev: () => void;
+    onNext: () => void;
+    /** "Dziś" button — jump to current week. Hidden if not provided. */
+    onToday?: () => void;
+    /** Generation CTAs — typically "+1 tydzień" / "+2 tygodnie". */
+    generateActions?: WeekGenerateAction[];
+    className?: string;
+}
+declare function WeekNavigator({ brand, currentLabel, parityLabel, parityTone, isReadOnly, prevDisabled, nextDisabled, previousLabel, nextLabel, onPrev, onNext, onToday, generateActions, className, }: WeekNavigatorProps): react_jsx_runtime.JSX.Element;
+
+export { type ActivityEntry, ActivityLog, type ActivityLogProps, type ActivityType, AppHeader, AppHeaderMenuItem, type AppHeaderMenuItemProps, type AppHeaderProps, type AreaTrend, Badge, type BadgeProps, type BadgeTone, type BreakdownArea, Button, type ButtonProps, type ButtonVariant, Card, type CardProps, CardStack, type CardStackProps, DashboardHeader, type DashboardHeaderProps, DashboardLayout, type DashboardLayoutProps, type DeliveryStatus, EmptyState, type EmptyStateProps, type FeedDotColor, FeedRow, type FeedRowProps, type HeatmapMember, ImportActivityRow, type ImportActivityRowProps, type ImportActivityStatus, ImportBatchRow, type ImportBatchRowProps, type ImportBatchStatus, ImportDropZone, type ImportDropZoneProps, ImportPageLayout, type ImportPageLayoutProps, InboxNotification, type InboxNotificationProps, type InboxUrgency, Input, type InputProps, type MemberDeliveryBadge, type MemberDetailStatus, type MemberDetailTrend, MemberDetailView, type MemberDetailViewProps, type MemberStatus, type NavItem, type NotificationChannel, type OverviewArea, PageHeading, type PageHeadingProps, PerformanceOverview, type PerformanceOverviewProps, ProfileForm, type ProfileFormProps, type ProfileFormValue, ReportBreakdown, type ReportBreakdownProps, ReportCard, type ReportCardProps, type ReportCardStatus, ReportSection, type ReportSectionProps, type ReportSectionVariant, type RosterDensity, type RosterEmphasis, type RosterFilter, type RosterPanelDensity, type RosterPrimaryMetric, type RosterRelationLine, type RosterTag, type RosterTagTone, type RosterTrend, type ScoreCard, ScoreCardRow, type ScoreCardRowProps, SetupFlow, type SetupFlowProps, type SetupStep, SidePanel, type SidePanelProps, StaffRosterPanel, type StaffRosterPanelProps, StaffRosterRow, type StaffRosterRowProps, type Suggestion, SwipeView, type SwipeViewPage, type SwipeViewProps, TeamHeatmap, type TeamHeatmapProps, TeamMemberRow, type TeamMemberRowProps, TeamPanelFooter, type TeamPanelFooterProps, TeamPanelToolbar, type TeamPanelToolbarProps, TranscriptDrawer, type TranscriptDrawerProps, type Trend, type TrendAnnotation, TrendChart, type TrendChartProps, type TrendPoint, type TrendSeries, type WeekGenerateAction, WeekNavigator, type WeekNavigatorProps };

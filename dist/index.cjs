@@ -66,6 +66,7 @@ __export(index_exports, {
   TeamPanelToolbar: () => TeamPanelToolbar,
   TranscriptDrawer: () => TranscriptDrawer,
   TrendChart: () => TrendChart,
+  WeekNavigator: () => WeekNavigator,
   tokens: () => tokens_exports
 });
 module.exports = __toCommonJS(index_exports);
@@ -2780,6 +2781,150 @@ function StaffRosterPanel({
     }
   );
 }
+
+// src/patterns/WeekNavigator.tsx
+var React17 = __toESM(require("react"), 1);
+var import_jsx_runtime33 = require("react/jsx-runtime");
+function WeekNavigator({
+  brand = "callflow",
+  currentLabel,
+  parityLabel,
+  parityTone = "neutral",
+  isReadOnly = false,
+  prevDisabled = false,
+  nextDisabled = false,
+  previousLabel,
+  nextLabel,
+  onPrev,
+  onNext,
+  onToday,
+  generateActions,
+  className
+}) {
+  const [genOpen, setGenOpen] = React17.useState(false);
+  const genRef = React17.useRef(null);
+  React17.useEffect(() => {
+    if (!genOpen) return;
+    function onDocClick(e) {
+      if (genRef.current && !genRef.current.contains(e.target)) {
+        setGenOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [genOpen]);
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+    "div",
+    {
+      className: cn(
+        "flex items-center gap-2 flex-wrap",
+        className
+      ),
+      role: "toolbar",
+      "aria-label": "Nawigacja tygodniowa",
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: onPrev,
+            disabled: prevDisabled,
+            title: previousLabel ? `Poprzedni: ${previousLabel}` : "Poprzedni tydzie\u0144",
+            "aria-label": previousLabel ? `Poprzedni tydzie\u0144: ${previousLabel}` : "Poprzedni tydzie\u0144",
+            className: cn(
+              "h-8 px-2 rounded-pill border border-ros-border bg-white text-ros-ink-muted text-[12px]",
+              "hover:bg-ros-surface-hover transition-colors",
+              "disabled:opacity-40 disabled:cursor-not-allowed"
+            ),
+            children: "\u2190"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+          "div",
+          {
+            className: cn(
+              "flex items-center gap-1.5 h-8 px-3 rounded-pill border border-ros-border bg-white",
+              isReadOnly && "bg-ros-surface-off"
+            ),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "text-[13px] font-medium text-ros-ink whitespace-nowrap", children: currentLabel }),
+              parityLabel && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(Badge, { tone: parityTone, children: parityLabel }),
+              isReadOnly && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                "span",
+                {
+                  className: "text-[11px] text-ros-ink-faint",
+                  title: "Tydzie\u0144 historyczny \u2014 tylko podgl\u0105d",
+                  "aria-label": "Tydzie\u0144 historyczny",
+                  children: "\u{1F512}"
+                }
+              )
+            ]
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: onNext,
+            disabled: nextDisabled,
+            title: nextLabel ? `Nast\u0119pny: ${nextLabel}` : "Nast\u0119pny tydzie\u0144",
+            "aria-label": nextLabel ? `Nast\u0119pny tydzie\u0144: ${nextLabel}` : "Nast\u0119pny tydzie\u0144",
+            className: cn(
+              "h-8 px-2 rounded-pill border border-ros-border bg-white text-ros-ink-muted text-[12px]",
+              "hover:bg-ros-surface-hover transition-colors",
+              "disabled:opacity-40 disabled:cursor-not-allowed"
+            ),
+            children: "\u2192"
+          }
+        ),
+        onToday && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: onToday,
+            className: "h-8 px-3 rounded-pill border border-ros-border bg-white text-ros-ink-muted text-[12px] hover:bg-ros-surface-hover transition-colors",
+            children: "Dzi\u015B"
+          }
+        ),
+        generateActions && generateActions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { ref: genRef, className: "relative ml-auto", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+            Button,
+            {
+              brand,
+              onClick: () => setGenOpen((v) => !v),
+              className: "h-8 px-3 text-[12px]",
+              children: [
+                "+ Zaplanuj ",
+                generateActions.length > 1 && "\u25BE"
+              ]
+            }
+          ),
+          genOpen && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+            "div",
+            {
+              role: "menu",
+              className: "absolute right-0 top-full mt-1 z-10 min-w-[180px] rounded-input border border-ros-border bg-white shadow-card overflow-hidden",
+              children: generateActions.map((a) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                "button",
+                {
+                  type: "button",
+                  role: "menuitem",
+                  onClick: () => {
+                    a.onClick();
+                    setGenOpen(false);
+                  },
+                  className: "w-full text-left px-3 py-2 text-[13px] text-ros-ink hover:bg-ros-surface-hover transition-colors",
+                  children: a.label
+                },
+                `${a.label}-${a.weeksAhead}`
+              ))
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ActivityLog,
@@ -2818,6 +2963,7 @@ function StaffRosterPanel({
   TeamPanelToolbar,
   TranscriptDrawer,
   TrendChart,
+  WeekNavigator,
   tokens
 });
 //# sourceMappingURL=index.cjs.map

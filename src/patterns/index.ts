@@ -146,3 +146,8 @@ export {
   type RosterFilter,
   type RosterPanelDensity,
 } from "./StaffRosterPanel";
+export {
+  WeekNavigator,
+  type WeekNavigatorProps,
+  type WeekGenerateAction,
+} from "./WeekNavigator";
