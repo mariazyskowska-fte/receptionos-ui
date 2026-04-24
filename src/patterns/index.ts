@@ -32,6 +32,12 @@ export {
   type AppHeaderMenuItemProps,
   type NavItem,
 } from "./AppHeader";
+export {
+  AppSwitcher,
+  type AppSwitcherProps,
+  type AppEntry,
+  type AppBrand,
+} from "./AppSwitcher";
 export { PageHeading, type PageHeadingProps } from "./PageHeading";
 export {
   ImportDropZone,
