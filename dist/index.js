@@ -666,11 +666,16 @@ function TeamMemberRow({
 
 // src/patterns/AppHeader.tsx
 import * as React6 from "react";
-import { jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
+import { Fragment, jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
 var brandBg2 = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
   shiftflow: "bg-brand-shiftflow"
+};
+var brandInitial = {
+  callflow: "CF",
+  consultflow: "Co",
+  shiftflow: "SF"
 };
 function getInitials(name) {
   return name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
@@ -679,6 +684,7 @@ function AppHeader({
   brand = "callflow",
   appName,
   appSubtitle,
+  apps,
   navItems,
   activeKey,
   onNavigate,
@@ -688,7 +694,9 @@ function AppHeader({
   className
 }) {
   const [userMenuOpen, setUserMenuOpen] = React6.useState(false);
+  const [appMenuOpen, setAppMenuOpen] = React6.useState(false);
   const menuRef = React6.useRef(null);
+  const appMenuRef = React6.useRef(null);
   React6.useEffect(() => {
     if (!userMenuOpen) return;
     function handleClick(e) {
@@ -699,6 +707,64 @@ function AppHeader({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [userMenuOpen]);
+  React6.useEffect(() => {
+    if (!appMenuOpen) return;
+    function handleClick(e) {
+      if (appMenuRef.current && !appMenuRef.current.contains(e.target)) {
+        setAppMenuOpen(false);
+      }
+    }
+    function handleKey(e) {
+      if (e.key === "Escape") setAppMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [appMenuOpen]);
+  const otherApps = React6.useMemo(
+    () => (apps ?? []).filter((a) => a.key !== brand),
+    [apps, brand]
+  );
+  const hasAppSwitcher = otherApps.length > 0;
+  const logoInner = /* @__PURE__ */ jsxs8(Fragment, { children: [
+    /* @__PURE__ */ jsx11(
+      "div",
+      {
+        className: cn(
+          "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold",
+          brandBg2[brand]
+        ),
+        "aria-hidden": true,
+        children: appName.split(/(?=[A-Z])/)[0]?.slice(0, 2).toUpperCase() ?? "??"
+      }
+    ),
+    /* @__PURE__ */ jsxs8("div", { className: "flex flex-col items-start", children: [
+      /* @__PURE__ */ jsx11("span", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: appName }),
+      appSubtitle && /* @__PURE__ */ jsx11("span", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: appSubtitle })
+    ] }),
+    hasAppSwitcher && /* @__PURE__ */ jsx11(
+      "svg",
+      {
+        width: "16",
+        height: "16",
+        viewBox: "0 0 16 16",
+        fill: "none",
+        stroke: "#a1a1aa",
+        strokeWidth: "1.5",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className: cn(
+          "transition-transform duration-150",
+          appMenuOpen && "rotate-180"
+        ),
+        "aria-hidden": true,
+        children: /* @__PURE__ */ jsx11("path", { d: "M4 6l4 4 4-4" })
+      }
+    )
+  ] });
   return /* @__PURE__ */ jsx11(
     "header",
     {
@@ -708,23 +774,68 @@ function AppHeader({
       ),
       children: /* @__PURE__ */ jsxs8("div", { className: "flex items-center justify-between h-full px-6 max-w-full", children: [
         /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-6 min-w-0", children: [
-          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-3 flex-shrink-0", children: [
+          hasAppSwitcher ? /* @__PURE__ */ jsxs8("div", { className: "relative flex-shrink-0", ref: appMenuRef, children: [
             /* @__PURE__ */ jsx11(
-              "div",
+              "button",
               {
+                type: "button",
+                onClick: () => setAppMenuOpen((v) => !v),
+                "aria-label": "Prze\u0142\u0105cz aplikacj\u0119",
+                "aria-expanded": appMenuOpen,
+                "aria-haspopup": "menu",
                 className: cn(
-                  "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold",
-                  brandBg2[brand]
+                  "flex items-center gap-3 px-2 py-1 -ml-2 rounded-input",
+                  "bg-transparent hover:bg-ros-surface-hover transition-colors duration-150",
+                  "border-none cursor-pointer text-left"
                 ),
-                "aria-hidden": true,
-                children: appName.split(/(?=[A-Z])/)[0]?.slice(0, 2).toUpperCase() ?? "??"
+                children: logoInner
               }
             ),
-            /* @__PURE__ */ jsxs8("div", { className: "flex flex-col", children: [
-              /* @__PURE__ */ jsx11("span", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: appName }),
-              appSubtitle && /* @__PURE__ */ jsx11("span", { className: "text-[12px] leading-[16px] text-ros-ink-muted", children: appSubtitle })
-            ] })
-          ] }),
+            appMenuOpen && /* @__PURE__ */ jsxs8(
+              "div",
+              {
+                role: "menu",
+                "aria-label": "Inne aplikacje receptionOS",
+                className: cn(
+                  "absolute left-0 top-[calc(100%+4px)] z-50 w-72",
+                  "bg-white border border-ros-border rounded-lg shadow-lg",
+                  "py-2 overflow-hidden"
+                ),
+                children: [
+                  /* @__PURE__ */ jsx11("div", { className: "px-3 py-1.5 text-[11px] leading-[14px] uppercase tracking-wide font-semibold text-ros-ink-muted", children: "Prze\u0142\u0105cz aplikacj\u0119" }),
+                  otherApps.map((app) => /* @__PURE__ */ jsxs8(
+                    "a",
+                    {
+                      href: app.url,
+                      role: "menuitem",
+                      className: cn(
+                        "flex items-center gap-3 px-3 py-2.5 no-underline text-inherit",
+                        "hover:bg-ros-surface-hover transition-colors duration-150 cursor-pointer"
+                      ),
+                      children: [
+                        /* @__PURE__ */ jsx11(
+                          "div",
+                          {
+                            className: cn(
+                              "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0",
+                              brandBg2[app.key]
+                            ),
+                            "aria-hidden": true,
+                            children: brandInitial[app.key]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs8("div", { className: "flex flex-col min-w-0 flex-1", children: [
+                          /* @__PURE__ */ jsx11("span", { className: "text-[14px] leading-[20px] font-semibold text-ros-ink", children: app.label }),
+                          app.description && /* @__PURE__ */ jsx11("span", { className: "text-[12px] leading-[16px] text-ros-ink-muted truncate", children: app.description })
+                        ] })
+                      ]
+                    },
+                    app.key
+                  ))
+                ]
+              }
+            )
+          ] }) : /* @__PURE__ */ jsx11("div", { className: "flex items-center gap-3 flex-shrink-0", children: logoInner }),
           navItems && navItems.length > 0 && /* @__PURE__ */ jsx11("nav", { className: "flex items-center gap-[2px]", "aria-label": "Nawigacja g\u0142\xF3wna", children: navItems.map((item) => {
             const isActive = item.key === activeKey;
             return /* @__PURE__ */ jsxs8(
@@ -833,7 +944,7 @@ var brandBg3 = {
   consultflow: "bg-brand-consultflow",
   shiftflow: "bg-brand-shiftflow"
 };
-var brandInitial = {
+var brandInitial2 = {
   callflow: "CF",
   consultflow: "Co",
   shiftflow: "SF"
@@ -937,7 +1048,7 @@ function AppSwitcher({
                           brandBg3[app.key]
                         ),
                         "aria-hidden": true,
-                        children: brandInitial[app.key]
+                        children: brandInitial2[app.key]
                       }
                     ),
                     /* @__PURE__ */ jsxs9("div", { className: "flex flex-col min-w-0 flex-1", children: [

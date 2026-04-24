@@ -309,6 +309,20 @@ interface TeamMemberRowProps {
 }
 declare function TeamMemberRow({ brand, name, subtitle, metricLabel, metricValue, trend, status, deliveryStatus, selectable, selected, onSelect, onOpen, className, }: TeamMemberRowProps): react_jsx_runtime.JSX.Element;
 
+type AppBrand = "callflow" | "consultflow" | "shiftflow";
+interface AppEntry {
+    key: AppBrand;
+    label: string;
+    url: string;
+    description?: string;
+}
+interface AppSwitcherProps {
+    current: AppBrand;
+    apps?: AppEntry[];
+    className?: string;
+}
+declare function AppSwitcher({ current, apps, className, }: AppSwitcherProps): react_jsx_runtime.JSX.Element;
+
 /**
  * AppHeader — shared top navigation bar for all receptionOS apps.
  *
@@ -332,6 +346,11 @@ declare function TeamMemberRow({ brand, name, subtitle, metricLabel, metricValue
  *   - No underline on active tabs
  *   - Geist font, 14px/20px Medium
  *   - transition-colors duration-150
+ *
+ * App switcher (cross-app navigation):
+ *   When `apps` prop is supplied with 2+ entries, the logo block becomes
+ *   a clickable trigger that opens a dropdown with the OTHER apps
+ *   (current app is filtered out). Entries link via <a href>.
  */
 interface NavItem {
     /** Unique key for matching active state. */
@@ -343,11 +362,16 @@ interface NavItem {
     icon?: React.ReactNode;
 }
 interface AppHeaderProps {
-    brand?: "callflow" | "consultflow" | "shiftflow";
+    brand?: AppBrand;
     /** App name shown next to the logo mark. */
     appName: string;
     /** Optional subtitle under the app name. */
     appSubtitle?: string;
+    /**
+     * Cross-app navigation. When provided (with more than the current app),
+     * clicking the logo opens a dropdown to switch to another app.
+     */
+    apps?: AppEntry[];
     /** Navigation items rendered as tabs. */
     navItems?: NavItem[];
     /** Key of the currently active nav item. */
@@ -362,7 +386,7 @@ interface AppHeaderProps {
     actions?: React.ReactNode;
     className?: string;
 }
-declare function AppHeader({ brand, appName, appSubtitle, navItems, activeKey, onNavigate, userName, userMenuContent, actions, className, }: AppHeaderProps): react_jsx_runtime.JSX.Element;
+declare function AppHeader({ brand, appName, appSubtitle, apps, navItems, activeKey, onNavigate, userName, userMenuContent, actions, className, }: AppHeaderProps): react_jsx_runtime.JSX.Element;
 /**
  * AppHeaderMenuItem — helper for items inside the user dropdown.
  * Follows the dropdown item spec: rounded-[6px], 14px text, hover bg.
@@ -372,20 +396,6 @@ interface AppHeaderMenuItemProps extends React.ButtonHTMLAttributes<HTMLButtonEl
     icon?: React.ReactNode;
 }
 declare function AppHeaderMenuItem({ danger, icon, children, className, ...rest }: AppHeaderMenuItemProps): react_jsx_runtime.JSX.Element;
-
-type AppBrand = "callflow" | "consultflow" | "shiftflow";
-interface AppEntry {
-    key: AppBrand;
-    label: string;
-    url: string;
-    description?: string;
-}
-interface AppSwitcherProps {
-    current: AppBrand;
-    apps?: AppEntry[];
-    className?: string;
-}
-declare function AppSwitcher({ current, apps, className, }: AppSwitcherProps): react_jsx_runtime.JSX.Element;
 
 /**
  * PageHeading — section header used at the top of every tab/page view.

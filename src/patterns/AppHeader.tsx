@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../utils/cn";
+import type { AppBrand, AppEntry } from "./AppSwitcher";
 
 /**
  * AppHeader — shared top navigation bar for all receptionOS apps.
@@ -24,6 +25,11 @@ import { cn } from "../utils/cn";
  *   - No underline on active tabs
  *   - Geist font, 14px/20px Medium
  *   - transition-colors duration-150
+ *
+ * App switcher (cross-app navigation):
+ *   When `apps` prop is supplied with 2+ entries, the logo block becomes
+ *   a clickable trigger that opens a dropdown with the OTHER apps
+ *   (current app is filtered out). Entries link via <a href>.
  */
 
 export interface NavItem {
@@ -37,11 +43,16 @@ export interface NavItem {
 }
 
 export interface AppHeaderProps {
-  brand?: "callflow" | "consultflow" | "shiftflow";
+  brand?: AppBrand;
   /** App name shown next to the logo mark. */
   appName: string;
   /** Optional subtitle under the app name. */
   appSubtitle?: string;
+  /**
+   * Cross-app navigation. When provided (with more than the current app),
+   * clicking the logo opens a dropdown to switch to another app.
+   */
+  apps?: AppEntry[];
   /** Navigation items rendered as tabs. */
   navItems?: NavItem[];
   /** Key of the currently active nav item. */
@@ -57,10 +68,16 @@ export interface AppHeaderProps {
   className?: string;
 }
 
-const brandBg: Record<NonNullable<AppHeaderProps["brand"]>, string> = {
+const brandBg: Record<AppBrand, string> = {
   callflow: "bg-brand-callflow",
   consultflow: "bg-brand-consultflow",
   shiftflow: "bg-brand-shiftflow",
+};
+
+const brandInitial: Record<AppBrand, string> = {
+  callflow: "CF",
+  consultflow: "Co",
+  shiftflow: "SF",
 };
 
 function getInitials(name: string): string {
@@ -77,6 +94,7 @@ export function AppHeader({
   brand = "callflow",
   appName,
   appSubtitle,
+  apps,
   navItems,
   activeKey,
   onNavigate,
@@ -86,9 +104,11 @@ export function AppHeader({
   className,
 }: AppHeaderProps) {
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [appMenuOpen, setAppMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const appMenuRef = React.useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close user dropdown on outside click
   React.useEffect(() => {
     if (!userMenuOpen) return;
     function handleClick(e: MouseEvent) {
@@ -100,6 +120,80 @@ export function AppHeader({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [userMenuOpen]);
 
+  // Close app switcher dropdown on outside click + Escape
+  React.useEffect(() => {
+    if (!appMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        appMenuRef.current &&
+        !appMenuRef.current.contains(e.target as Node)
+      ) {
+        setAppMenuOpen(false);
+      }
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setAppMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [appMenuOpen]);
+
+  const otherApps = React.useMemo(
+    () => (apps ?? []).filter((a) => a.key !== brand),
+    [apps, brand],
+  );
+  const hasAppSwitcher = otherApps.length > 0;
+
+  const logoInner = (
+    <>
+      <div
+        className={cn(
+          "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold",
+          brandBg[brand],
+        )}
+        aria-hidden
+      >
+        {appName
+          .split(/(?=[A-Z])/)[0]
+          ?.slice(0, 2)
+          .toUpperCase() ?? "??"}
+      </div>
+      <div className="flex flex-col items-start">
+        <span className="text-[14px] leading-[20px] font-semibold text-ros-ink">
+          {appName}
+        </span>
+        {appSubtitle && (
+          <span className="text-[12px] leading-[16px] text-ros-ink-muted">
+            {appSubtitle}
+          </span>
+        )}
+      </div>
+      {hasAppSwitcher && (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="#a1a1aa"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={cn(
+            "transition-transform duration-150",
+            appMenuOpen && "rotate-180",
+          )}
+          aria-hidden
+        >
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      )}
+    </>
+  );
+
   return (
     <header
       className={cn(
@@ -110,31 +204,76 @@ export function AppHeader({
       <div className="flex items-center justify-between h-full px-6 max-w-full">
         {/* Left: logo + nav */}
         <div className="flex items-center gap-6 min-w-0">
-          {/* Logo mark + app name */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div
-              className={cn(
-                "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold",
-                brandBg[brand],
+          {/* Logo mark + app name (with optional app-switcher dropdown) */}
+          {hasAppSwitcher ? (
+            <div className="relative flex-shrink-0" ref={appMenuRef}>
+              <button
+                type="button"
+                onClick={() => setAppMenuOpen((v) => !v)}
+                aria-label="Przełącz aplikację"
+                aria-expanded={appMenuOpen}
+                aria-haspopup="menu"
+                className={cn(
+                  "flex items-center gap-3 px-2 py-1 -ml-2 rounded-input",
+                  "bg-transparent hover:bg-ros-surface-hover transition-colors duration-150",
+                  "border-none cursor-pointer text-left",
+                )}
+              >
+                {logoInner}
+              </button>
+
+              {appMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Inne aplikacje receptionOS"
+                  className={cn(
+                    "absolute left-0 top-[calc(100%+4px)] z-50 w-72",
+                    "bg-white border border-ros-border rounded-lg shadow-lg",
+                    "py-2 overflow-hidden",
+                  )}
+                >
+                  <div className="px-3 py-1.5 text-[11px] leading-[14px] uppercase tracking-wide font-semibold text-ros-ink-muted">
+                    Przełącz aplikację
+                  </div>
+                  {otherApps.map((app) => (
+                    <a
+                      key={app.key}
+                      href={app.url}
+                      role="menuitem"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 no-underline text-inherit",
+                        "hover:bg-ros-surface-hover transition-colors duration-150 cursor-pointer",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "size-8 rounded-input flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0",
+                          brandBg[app.key],
+                        )}
+                        aria-hidden
+                      >
+                        {brandInitial[app.key]}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-[14px] leading-[20px] font-semibold text-ros-ink">
+                          {app.label}
+                        </span>
+                        {app.description && (
+                          <span className="text-[12px] leading-[16px] text-ros-ink-muted truncate">
+                            {app.description}
+                          </span>
+                        )}
+                      </div>
+                    </a>
+                  ))}
+                </div>
               )}
-              aria-hidden
-            >
-              {appName
-                .split(/(?=[A-Z])/)[0]
-                ?.slice(0, 2)
-                .toUpperCase() ?? "??"}
             </div>
-            <div className="flex flex-col">
-              <span className="text-[14px] leading-[20px] font-semibold text-ros-ink">
-                {appName}
-              </span>
-              {appSubtitle && (
-                <span className="text-[12px] leading-[16px] text-ros-ink-muted">
-                  {appSubtitle}
-                </span>
-              )}
+          ) : (
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {logoInner}
             </div>
-          </div>
+          )}
 
           {/* Nav tabs */}
           {navItems && navItems.length > 0 && (
