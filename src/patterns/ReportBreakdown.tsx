@@ -53,6 +53,14 @@ export interface ReportBreakdownProps {
   areas: BreakdownArea[];
   suggestions?: Suggestion[];
   maxSuggestions?: number;
+  /**
+   * "compact" hides the per-area indicator (✓ / ❗) and slightly reduces the
+   * area-name font, so long Polish labels ("Komunikacja", "Ogólna ocena")
+   * fit without truncation in narrow / mobile viewports. Use in operator
+   * views; manager views should keep "default" so the weakest-area cue
+   * stays visible.
+   */
+  density?: "default" | "compact";
   className?: string;
 }
 
@@ -82,8 +90,10 @@ export function ReportBreakdown({
   areas,
   suggestions,
   maxSuggestions = 3,
+  density = "default",
   className,
 }: ReportBreakdownProps) {
+  const isCompact = density === "compact";
   const weakestArea = React.useMemo(() => {
     if (areas.length === 0) return null;
     return areas.reduce((min, a) => (a.score < min.score ? a : min), areas[0]);
@@ -148,13 +158,20 @@ export function ReportBreakdown({
               )}
             >
               {/* Name + indicator */}
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate">
+              <div className="flex items-center justify-between gap-1">
+                <span
+                  className={cn(
+                    "leading-[14px] font-medium text-ros-ink-muted truncate",
+                    isCompact ? "text-[10px]" : "text-[11px]",
+                  )}
+                >
                   {area.name}
                 </span>
-                <span className={cn("text-[11px]", scoreText(area.score))}>
-                  {isPositive ? "✓" : "❗"}
-                </span>
+                {!isCompact && (
+                  <span className={cn("text-[11px]", scoreText(area.score))}>
+                    {isPositive ? "✓" : "❗"}
+                  </span>
+                )}
               </div>
 
               {/* Score */}

@@ -691,9 +691,17 @@ interface ReportBreakdownProps {
     areas: BreakdownArea[];
     suggestions?: Suggestion[];
     maxSuggestions?: number;
+    /**
+     * "compact" hides the per-area indicator (✓ / ❗) and slightly reduces the
+     * area-name font, so long Polish labels ("Komunikacja", "Ogólna ocena")
+     * fit without truncation in narrow / mobile viewports. Use in operator
+     * views; manager views should keep "default" so the weakest-area cue
+     * stays visible.
+     */
+    density?: "default" | "compact";
     className?: string;
 }
-declare function ReportBreakdown({ brand, title, overallScore, previousOverallScore, areas, suggestions, maxSuggestions, className, }: ReportBreakdownProps): react_jsx_runtime.JSX.Element;
+declare function ReportBreakdown({ brand, title, overallScore, previousOverallScore, areas, suggestions, maxSuggestions, density, className, }: ReportBreakdownProps): react_jsx_runtime.JSX.Element;
 
 /**
  * MemberDetailView — header + back navigation + children slot for
