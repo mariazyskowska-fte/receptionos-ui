@@ -845,9 +845,16 @@ interface PerformanceOverviewProps {
     headerBadge?: string;
     /** Show strengths/weaknesses summary footer. Default: true in aggregate. */
     showSummary?: boolean;
+    /**
+     * "compact" hides the per-area indicator (✓/❗) and reduces the area-name
+     * font from 11px to 10px. Use in narrow / mobile viewports so long Polish
+     * labels (e.g. "Komunikacja", "Ogólna ocena") fit without truncation.
+     * Trend arrow (↑/↓/→) stays — it's smaller and carries direction info.
+     */
+    density?: "default" | "compact";
     className?: string;
 }
-declare function PerformanceOverview({ brand, mode, displayScale, title, periodLabel, overallScore, previousOverallScore, areas, headerBadge, showSummary, className, }: PerformanceOverviewProps): react_jsx_runtime.JSX.Element;
+declare function PerformanceOverview({ brand, mode, displayScale, title, periodLabel, overallScore, previousOverallScore, areas, headerBadge, showSummary, density, className, }: PerformanceOverviewProps): react_jsx_runtime.JSX.Element;
 
 /**
  * DashboardLayout — two-column manager dashboard.

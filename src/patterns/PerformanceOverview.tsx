@@ -60,6 +60,13 @@ export interface PerformanceOverviewProps {
   headerBadge?: string;
   /** Show strengths/weaknesses summary footer. Default: true in aggregate. */
   showSummary?: boolean;
+  /**
+   * "compact" hides the per-area indicator (✓/❗) and reduces the area-name
+   * font from 11px to 10px. Use in narrow / mobile viewports so long Polish
+   * labels (e.g. "Komunikacja", "Ogólna ocena") fit without truncation.
+   * Trend arrow (↑/↓/→) stays — it's smaller and carries direction info.
+   */
+  density?: "default" | "compact";
   className?: string;
 }
 
@@ -109,9 +116,11 @@ export function PerformanceOverview({
   areas,
   headerBadge,
   showSummary,
+  density = "default",
   className,
 }: PerformanceOverviewProps) {
   const shouldShowSummary = showSummary ?? mode === "aggregate";
+  const isCompact = density === "compact";
 
   const weakest = React.useMemo(() => {
     if (areas.length === 0) return null;
@@ -166,14 +175,21 @@ export function PerformanceOverview({
               )}
             >
               {/* Name + indicators */}
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate">
+              <div className="flex items-center justify-between gap-1">
+                <span
+                  className={cn(
+                    "leading-[14px] font-medium text-ros-ink-muted truncate",
+                    isCompact ? "text-[10px]" : "text-[11px]",
+                  )}
+                >
                   {area.name}
                 </span>
                 <div className="flex items-center gap-1">
-                  <span className={cn("text-[11px]", scoreText(area.score))}>
-                    {isPositive ? "✓" : "❗"}
-                  </span>
+                  {!isCompact && (
+                    <span className={cn("text-[11px]", scoreText(area.score))}>
+                      {isPositive ? "✓" : "❗"}
+                    </span>
+                  )}
                   {mode === "aggregate" && area.trend && (
                     <span className={cn("text-[11px]", trendGlyph[area.trend].color)}>
                       {trendGlyph[area.trend].glyph}

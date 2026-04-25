@@ -2039,9 +2039,11 @@ function PerformanceOverview({
   areas,
   headerBadge,
   showSummary,
+  density = "default",
   className
 }) {
   const shouldShowSummary = showSummary ?? mode === "aggregate";
+  const isCompact = density === "compact";
   const weakest = React11.useMemo(() => {
     if (areas.length === 0) return null;
     return areas.reduce((min, a) => a.score < min.score ? a : min, areas[0]);
@@ -2074,10 +2076,19 @@ function PerformanceOverview({
             isWeakest ? "bg-ros-danger-bg/50 ring-1 ring-ros-danger-fg/20" : "bg-ros-surface-off"
           ),
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-[11px] leading-[14px] font-medium text-ros-ink-muted truncate", children: area.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between gap-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                "span",
+                {
+                  className: cn(
+                    "leading-[14px] font-medium text-ros-ink-muted truncate",
+                    isCompact ? "text-[10px]" : "text-[11px]"
+                  ),
+                  children: area.name
+                }
+              ),
               /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center gap-1", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: cn("text-[11px]", scoreText3(area.score)), children: isPositive ? "\u2713" : "\u2757" }),
+                !isCompact && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: cn("text-[11px]", scoreText3(area.score)), children: isPositive ? "\u2713" : "\u2757" }),
                 mode === "aggregate" && area.trend && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: cn("text-[11px]", trendGlyph3[area.trend].color), children: trendGlyph3[area.trend].glyph })
               ] })
             ] }),
